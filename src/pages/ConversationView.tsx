@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getMessages, sendMessage, markMessagesAsRead } from '../api/messages';
 import { getClient, updateClient, toggleClientBlock } from '../api/clients';
-import { useSocket } from '../hooks/useSocket';
+import { useSocket } from '../hooks/useWebSocket';
 import MessageBubble from '../components/messaging/MessageBubble';
 import MessageInput from '../components/messaging/MessageInput';
 import ClientInfo from '../components/messaging/ClientInfo';
