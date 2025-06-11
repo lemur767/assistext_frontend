@@ -5,6 +5,7 @@ import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '../src/context/ThemeContext';
 import AppLayout from './components/Layout/AppLayout';
 import './styles/globals.css';
+import { clearLargeCookies } from './utils/clear';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -15,7 +16,9 @@ const queryClient = new QueryClient({
     },
   },
 });
-
+if (window.performance.navigation.type === 1) { // Page refresh
+    clearLargeCookies();
+}
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
