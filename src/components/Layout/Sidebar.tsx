@@ -21,15 +21,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
 
   const navigationItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: DashboardIcon },
-    { path: '/messages', label: 'Messages', icon: MessagesIcon },
-    { path: '/profiles', label: 'Profiles', icon: ProfilesIcon },
-    { path: '/clients', label: 'Clients', icon: ClientsIcon },
-    { path: '/ai-settings', label: 'AI Settings', icon: AISettingsIcon },
-    { path: '/analytics', label: 'Analytics', icon: AnalyticsIcon },
-    { path: '/settings', label: 'Settings', icon: SettingsIcon },
-  ];
-
+  { path: '/app/dashboard', label: 'Dashboard', icon: DashboardIcon },
+  { path: '/app/messages', label: 'Messages', icon: MessagesIcon },
+  { path: '/app/profiles', label: 'Profiles', icon: ProfilesIcon },
+  { path: '/app/clients', label: 'Clients', icon: ClientsIcon },
+  { path: '/app/ai-settings', label: 'AI Settings', icon: AISettingsIcon },
+  { path: '/app/analytics', label: 'Analytics', icon: AnalyticsIcon },
+  { path: '/app/settings', label: 'Settings', icon: SettingsIcon },
+];
   const sidebarClasses = `
     fixed top-0 left-0 h-full bg-card border-r border-neutral-200 dark:border-neutral-700
     shadow-lg transition-all duration-300 z-40

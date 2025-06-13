@@ -8,7 +8,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // AssisText brand colors
+        // AssisText brand colors - these match your CSS variables
         brand: {
           // Light mode colors
           text: '#03131c',
@@ -16,42 +16,106 @@ module.exports = {
           primary: '#0b5775',
           secondary: '#be5cf0',
           accent: '#d214c2',
-          // Dark mode colors (can be accessed via CSS variables)
+          // Dark mode colors
           'text-dark': '#e3f3fc',
           'bg-dark': '#040d12',
           'primary-dark': '#88d5f4',
           'secondary-dark': '#720fa3',
           'accent-dark': '#ec2fdb',
         },
-        // Extended palette for surfaces and states
-        surface: {
-          50: '#f8fbfd',
-          100: '#eef7fb',
-          200: '#d6ebf4',
-          300: '#b8dae9',
-          400: '#94c5db',
-          500: '#6eadca',
-          600: '#4c8fb1',
-          700: '#3a7090',
-          800: '#2d5670',
-          900: '#1f3a4d',
+        // Primary color scale based on your brand
+        primary: {
+          50: '#f0f9ff',
+          100: '#e0f2fe',
+          200: '#bae6fd',
+          300: '#7dd3fc',
+          400: '#38bdf8',
+          500: '#0b5775', // Your primary color
+          600: '#0284c7',
+          700: '#0369a1',
+          800: '#075985',
+          900: '#0c4a6e',
         },
+        // Secondary color scale
+        secondary: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#be5cf0', // Your secondary color
+          600: '#a855f7',
+          700: '#9333ea',
+          800: '#7c3aed',
+          900: '#6b21a8',
+        },
+        // Accent color scale
         accent: {
           50: '#fdf4fd',
           100: '#fae8fa',
           200: '#f4d1f4',
           300: '#eab0ea',
           400: '#dc84dc',
-          500: '#d214c2',
+          500: '#d214c2', // Your accent color
           600: '#be12ae',
           700: '#9e0f8f',
           800: '#7a0c6f',
           900: '#5c0954',
-        }
+        },
+        // Surface colors for better theming
+        surface: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#475569',
+          700: '#334155',
+          800: '#1e293b',
+          900: '#0f172a',
+        },
+        // Success, warning, error colors
+        success: {
+          50: '#f0fdf4',
+          100: '#dcfce7',
+          200: '#bbf7d0',
+          300: '#86efac',
+          400: '#4ade80',
+          500: '#22c55e',
+          600: '#16a34a',
+          700: '#15803d',
+          800: '#166534',
+          900: '#14532d',
+        },
+        warning: {
+          50: '#fffbeb',
+          100: '#fef3c7',
+          200: '#fde68a',
+          300: '#fcd34d',
+          400: '#fbbf24',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
+          800: '#92400e',
+          900: '#78350f',
+        },
+        error: {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['Fira Code', 'ui-monospace', 'monospace'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
@@ -82,6 +146,7 @@ module.exports = {
         'bounce-gentle': 'bounce 1s infinite',
         'pulse-slow': 'pulse 3s infinite',
         'glow': 'glow 2s ease-in-out infinite alternate',
+        'scale-in': 'scaleIn 0.2s ease-out',
       },
       keyframes: {
         fadeIn: {
@@ -95,6 +160,10 @@ module.exports = {
         slideDown: {
           '0%': { opacity: '0', transform: 'translateY(-20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
         glow: {
           '0%': { boxShadow: '0 0 5px #0b5775, 0 0 10px #0b5775, 0 0 15px #0b5775' },
@@ -110,6 +179,7 @@ module.exports = {
         'hard': '0 10px 40px -10px rgba(11, 87, 117, 0.15), 0 4px 6px -2px rgba(11, 87, 117, 0.05)',
         'brand': '0 4px 14px 0 rgba(11, 87, 117, 0.2)',
         'accent': '0 4px 14px 0 rgba(210, 20, 194, 0.2)',
+        'glow': '0 0 20px rgba(11, 87, 117, 0.15)',
       },
       borderRadius: {
         'xl': '0.75rem',
@@ -122,13 +192,25 @@ module.exports = {
         '80': '80',
         '90': '90',
         '100': '100',
+        'modal': '1000',
+        'popover': '1010',
+        'tooltip': '1020',
+        'notification': '1030',
+      },
+      transitionProperty: {
+        'height': 'height',
+        'spacing': 'margin, padding',
+      },
+      scale: {
+        '102': '1.02',
+        '103': '1.03',
       }
     },
   },
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
-    // Add custom plugin for additional utilities
+    // Custom plugin for AssisText utilities
     function({ addUtilities, addComponents, theme }) {
       const newUtilities = {
         '.text-shadow': {
@@ -146,12 +228,17 @@ module.exports = {
         '.gradient-text-brand': {
           background: 'linear-gradient(135deg, #0b5775, #d214c2)',
           backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
           color: 'transparent',
         },
         '.glass-morphism': {
           background: 'rgba(238, 247, 251, 0.1)',
           backdropFilter: 'blur(10px)',
           border: '1px solid rgba(238, 247, 251, 0.2)',
+        },
+        '.debug-grid': {
+          backgroundImage: 'linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px)',
+          backgroundSize: '20px 20px',
         }
       }
 
@@ -174,6 +261,28 @@ module.exports = {
           '&:disabled': {
             opacity: '0.5',
             cursor: 'not-allowed',
+          }
+        },
+        '.input': {
+          padding: theme('spacing.3') + ' ' + theme('spacing.4'),
+          borderRadius: theme('borderRadius.xl'),
+          border: '2px solid ' + theme('colors.surface.200'),
+          fontSize: theme('fontSize.sm'),
+          transition: 'all 0.2s ease-in-out',
+          '&:focus': {
+            outline: 'none',
+            borderColor: theme('colors.brand.primary'),
+            boxShadow: '0 0 0 3px rgba(11, 87, 117, 0.1)',
+          }
+        },
+        '.card': {
+          backgroundColor: theme('colors.white'),
+          borderRadius: theme('borderRadius.xl'),
+          boxShadow: theme('boxShadow.sm'),
+          border: '1px solid ' + theme('colors.surface.200'),
+          transition: 'all 0.2s ease-in-out',
+          '&:hover': {
+            boxShadow: theme('boxShadow.md'),
           }
         }
       }

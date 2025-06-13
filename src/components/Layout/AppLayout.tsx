@@ -1,47 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
-import { Sidebar } from './Sidebar';
-import {TopHeader} from './TopHeader';
-import { Dashboard } from '../dashboard/Dashboard';
-import { MessagingInterface}  from '../messaging/MessagingInterface';
-import { ProfileManagement } from '../profile/ProfileManagement';
-import AISettings from '../AISettings/AISettings';
-import type { BaseComponentProps } from '../../types';
-import { ComingSoonPage } from './ComingSoon';
+import { Outlet } from 'react-router-dom';
+import Sidebar from './Sidebar';
+import TopHeader from './TopHeader';
 
-interface AppLayoutProps extends BaseComponentProps {}
+const AppLayout: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState('1');
 
-const AppLayout: React.FC<AppLayoutProps> = ({ className = '' }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedProfileId, setSelectedProfileId] = useState<string>('1'); // Mock profile ID
-  
-  const isMobile = useMediaQuery('(max-width: 768px)');
-  const location = useLocation();
-
-  // Close sidebar on route change (mobile)
   useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  }, [location.pathname, isMobile]);
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
 
-  // Keyboard shortcuts
-  useKeyboardShortcut(
-    { key: 'b', ctrlKey: true },
-    () => setSidebarOpen(!sidebarOpen),
-    [sidebarOpen]
-  );
-
-  useKeyboardShortcut(
-    { key: 'Escape' },
-    () => isMobile && setSidebarOpen(false),
-    [isMobile, sidebarOpen]
-  );
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
-    <div className={`min-h-screen bg-background text-theme ${className}`}>
+    <div className="min-h-screen surface-bg">
       {/* Sidebar */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -51,9 +35,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ className = '' }) => {
         onProfileChange={setSelectedProfileId}
       />
 
-      {/* Main Content */}
-      <div className={`flex flex-col transition-all duration-300 ${
-        isMobile ? '' : sidebarOpen ? 'ml-64' : 'ml-16'
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${
+        isMobile ? 'ml-0' : sidebarOpen ? 'ml-64' : 'ml-16'
       }`}>
         {/* Top Header */}
         <TopHeader
@@ -62,63 +46,21 @@ const AppLayout: React.FC<AppLayoutProps> = ({ className = '' }) => {
           isMobile={isMobile}
         />
 
-        {/* Page Content */}
+        {/* Page Content - This is where routed components will render */}
         <main className="flex-1 p-4 lg:p-6">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route 
-              path="/dashboard" 
-              element={<Dashboard profileId={selectedProfileId} />} 
-            />
-            <Route 
-              path="/messages" 
-              element={<MessagingInterface profileId={selectedProfileId} />} 
-            />
-            <Route 
-              path="/profiles" 
-              element={<ProfileManagement userId="1" />} 
-            />
-            <Route 
-              path="/ai-settings" 
-              element={<AISettings profileId={selectedProfileId} />} 
-            />
-            <Route 
-              path="/analytics" 
-              element={<ComingSoonPage title="Analytics" icon="📊" />} 
-            />
-            <Route 
-              path="/clients" 
-              element={<ComingSoonPage title="Client Management" icon="👥" />} 
-            />
-            <Route 
-              path="/settings" 
-              element={<ComingSoonPage title="Settings" icon="⚙️" />} 
-            />
-          </Routes>
+          <Outlet />
         </main>
       </div>
 
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-30"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
     </div>
   );
 };
-
-// src/components/Layout/Sidebar.tsx
-
-
-// src/components/Layout/TopHeader.tsx
-
-
-
-// Coming Soon Page Component
-
-
-// Navigation Icons
 
 export default AppLayout;

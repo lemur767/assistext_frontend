@@ -1,6 +1,6 @@
 // src/components/UI/ThemeToggle.tsx
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ThemeToggleProps {
   className?: string;

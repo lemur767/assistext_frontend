@@ -1,18 +1,18 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useWebSocket } from '../../hooks/useWebSocket';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
-import { useKeyboardShortcut } from '../../hooks/useKeyboardShortcut';
-import { messageService } from '../../services/messageService';
-import { formatters } from '../../utils/formatters';
-import { QUERY_KEYS } from '../../utils/constants';
+import { useWebSocket } from '../hooks/useWebSocket';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
+import { messageService } from '../services/messageService';
+import { formatters } from '../utils/formatters';
+import { QUERY_KEYS } from '../utils/constants';
 import type { 
   Profile, 
   Conversation, 
   Message, 
   Client,
   BaseComponentProps 
-} from '../../types';
+} from '../types';
 
 interface MessagingInterfaceProps extends BaseComponentProps {
   profileId: string;

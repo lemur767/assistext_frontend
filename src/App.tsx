@@ -1,59 +1,86 @@
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { ThemeProvider } from '../src/context/ThemeContext';
-import AppLayout from './components/Layout/AppLayout';
-import './styles/globals.css';
-import { clearLargeCookies } from './utils/clear';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import PublicRoute from './components/common/PublicRoute';
 
-// Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      retry: 1,
-    },
-  },
-});
-if (window.performance.navigation.type === 1) { // Page refresh
-    clearLargeCookies();
-}
+// Layout Components
+import AppLayout from './components/Layout/AppLayout';
+import AuthLayout from './components/Layout/AuthLayout';
+
+// Public Pages
+import Login from './pages/Login';
+import Register from './pages/Register';
+import LandingPage from './pages/LandingPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+
+// Protected Pages
+import Dashboard from './pages/Dashboard';
+import MessagingInterface from './pages/MessagingInterface';
+import ProfileManagement from './pages/ProfileManagement';
+import AISettings from './pages/AISettings';
+import Analytics from './pages/Analytics';
+import ClientManagement from './pages/ClientManagement';
+import Settings from './pages/Settings';
+import Billing from './pages/Billing';
+
+// Error Pages
+import NotFound from './pages/NotFound';
+import ErrorBoundary from './components/common/ErrorBoundary';
+
 const App: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <Router>
-          <div className="App">
-            <AppLayout />
-            <Toaster
-              position="bottom-right"
-              toastOptions={{
-                duration: 4000,
-                className: '',
-                style: {
-                  background: 'var(--card-bg)',
-                  color: 'var(--text-color)',
-                  border: '1px solid var(--border-color)',
-                },
-                success: {
-                  iconTheme: {
-                    primary: '#22c55e',
-                    secondary: '#ffffff',
-                  },
-                },
-                error: {
-                  iconTheme: {
-                    primary: '#ef4444',
-                    secondary: '#ffffff',
-                  },
-                },
-              }}
-            />
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <div className="surface-bg min-h-screen">
+            <Routes>
+              {/* Public Routes - Available at root level */}
+              <Route path="/" element={
+                <PublicRoute>
+                  <AuthLayout />
+                </PublicRoute>
+              }>
+                <Route index element={<LandingPage />} />
+                <Route path="login" element={<Login />} />
+                <Route path="register" element={<Register />} />
+                <Route path="forgot-password" element={<ForgotPassword />} />
+                <Route path="reset-password" element={<ResetPassword />} />
+              </Route>
+
+              {/* Protected Routes - Main Application */}
+              <Route path="/app" element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<Navigate to="/app/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="messages" element={<MessagingInterface />} />
+                <Route path="profiles" element={<ProfileManagement />} />
+                <Route path="ai-settings" element={<AISettings />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="clients" element={<ClientManagement />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="billing" element={<Billing />} />
+              </Route>
+
+              {/* Redirect old routes to new structure */}
+              <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+              <Route path="/messages" element={<Navigate to="/app/messages" replace />} />
+              <Route path="/profiles" element={<Navigate to="/app/profiles" replace />} />
+              <Route path="/ai-settings" element={<Navigate to="/app/ai-settings" replace />} />
+              <Route path="/analytics" element={<Navigate to="/app/analytics" replace />} />
+              <Route path="/clients" element={<Navigate to="/app/clients" replace />} />
+              <Route path="/settings" element={<Navigate to="/app/settings" replace />} />
+
+              {/* 404 Not Found */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </div>
-        </Router>
-      </ThemeProvider>
-    </QueryClientProvider>
+        </AuthProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };
 
