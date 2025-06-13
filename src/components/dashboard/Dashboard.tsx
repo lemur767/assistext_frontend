@@ -1,7 +1,7 @@
 // src/components/Dashboard/Dashboard.tsx
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { analyticsService } from '../../services/analyticsService';
+import { analyticsService } from '../../services/analyticService';
 import { formatters } from '../../utils/formatters';
 import { QUERY_KEYS } from '../../utils/constants';
 import type { 
@@ -24,7 +24,7 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions,
+
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 
@@ -310,45 +310,7 @@ const MessageVolumeChart: React.FC<MessageVolumeChartProps> = ({ data, timeRange
     ],
   }), [data]);
 
-  const options: ChartOptions<'line'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            family: 'Inter',
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-        ticks: {
-          font: {
-            family: 'Inter',
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            family: 'Inter',
-          },
-        },
-      },
-    },
-  };
+ 
 
   return (
     <div className="card">
@@ -358,7 +320,7 @@ const MessageVolumeChart: React.FC<MessageVolumeChartProps> = ({ data, timeRange
       </div>
       <div className="card-body">
         <div className="h-80">
-          <Line data={chartData} options={options} />
+          <Line data={chartData} />
         </div>
       </div>
     </div>
@@ -396,46 +358,7 @@ const AIPerformanceChart: React.FC<AIPerformanceChartProps> = ({ data, timeRange
     ],
   }), [data]);
 
-  const options: ChartOptions<'bar'> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          font: {
-            family: 'Inter',
-          },
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 100,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
-        },
-        ticks: {
-          font: {
-            family: 'Inter',
-          },
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        ticks: {
-          font: {
-            family: 'Inter',
-          },
-        },
-      },
-    },
-  };
+ 
 
   return (
     <div className="card">
@@ -445,7 +368,7 @@ const AIPerformanceChart: React.FC<AIPerformanceChartProps> = ({ data, timeRange
       </div>
       <div className="card-body">
         <div className="h-80">
-          <Bar data={chartData} options={options} />
+          <Bar data={chartData} />
         </div>
       </div>
     </div>

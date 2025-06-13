@@ -1,7 +1,7 @@
 // src/components/AISettings/AISettings.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { aiSettingsService } from '../../services/aiSettingsService';
+import { aiSettingsService } from '../../services/aiSettingService';
 import { QUERY_KEYS } from '../../utils/constants';
 import { useDebounce } from '../../hooks/useDebounce';
 import toast from 'react-hot-toast';
