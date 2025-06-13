@@ -82,11 +82,11 @@ const Clients = () => {
       switch (type) {
         case 'blocked':
           clientsData = await getAllClients(); // Replace with getBlockedClients() when available
-          clientsData = clientsData.filter(client => client.is_blocked);
+          clientsData = clientsData.filter(client => client.isBlocked);
           break;
         case 'regular':
           clientsData = await getAllClients(); // Replace with getRegularClients() when available
-          clientsData = clientsData.filter(client => client.is_regular);
+          clientsData = clientsData.filter(client => client.isRegular);
           break;
         default:
           clientsData = await getAllClients();
@@ -115,21 +115,21 @@ const Clients = () => {
     setIsSubmitting(true);
     try {
       await toggleClientBlock(
-        selectedClient.phone_number, 
-        !selectedClient.is_blocked,
-        !selectedClient.is_blocked ? blockReason : undefined
+        selectedClient.phoneNumber, 
+        !selectedClient.isBlocked,
+        !selectedClient.isBlocked ? blockReason : undefined
       );
       
       // Update client in state
       setClients(clients.map(client => 
-        client.phone_number === selectedClient.phone_number
-          ? { ...client, is_blocked: !client.is_blocked }
+        client.phoneNumber === selectedClient.phoneNumber
+          ? { ...client, isBlocked: !client.isBlocked }
           : client
       ));
       
       setShowBlockDialog(false);
       toast.success(
-        selectedClient.is_blocked
+        selectedClient.isBlocked
           ? 'Client unblocked successfully'
           : 'Client blocked successfully'
       );
@@ -144,17 +144,17 @@ const Clients = () => {
   // Handle mark as regular/not regular
   const handleToggleRegular = async (client: Client) => {
     try {
-      await markClientAsRegular(client.phone_number, !client.is_regular);
+      await markClientAsRegular(client.phoneNumber, !client.isRegular);
       
       // Update client in state
       setClients(clients.map(c => 
-        c.phone_number === client.phone_number
-          ? { ...c, is_regular: !c.is_regular }
+        c.phoneNumber === client.phoneNumber
+          ? { ...c, isRegular: !c.isRegular }
           : c
       ));
       
       toast.success(
-        client.is_regular
+        client.isRegular
           ? 'Client marked as not regular'
           : 'Client marked as regular'
       );
@@ -168,7 +168,7 @@ const Clients = () => {
   const navigateToConversation = (client: Client) => {
     // If there's only one profile, navigate directly to that conversation
     if (profiles.length === 1) {
-      navigate(`/conversations/${profiles[0].id}/${client.phone_number}`);
+      navigate(`/conversations/${profiles[0].id}/${client.phoneNumber}`);
       return;
     }
     
@@ -176,7 +176,7 @@ const Clients = () => {
     // This would typically show conversations across all profiles
     // But for now, just navigate to the first profile's conversation
     if (profiles.length > 0) {
-      navigate(`/conversations/${profiles[0].id}/${client.phone_number}`);
+      navigate(`/conversations/${profiles[0].id}/${client.phoneNumber}`);
     } else {
       toast.error('No profiles available to view conversations');
     }
@@ -188,8 +188,8 @@ const Clients = () => {
     : filterType === 'all'
       ? clients
       : filterType === 'blocked'
-        ? clients.filter(client => client.is_blocked)
-        : clients.filter(client => client.is_regular);
+        ? clients.filter(client => client.isBlocked)
+        : clients.filter(client => client.isRegular);
 
   if (isLoading && clients.length === 0) {
     return (
@@ -321,7 +321,7 @@ const Clients = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredClients.map((client) => (
                   <tr 
-                    key={client.phone_number} 
+                    key={client.phoneNumber} 
                     className="hover:bg-gray-50 cursor-pointer"
                     onClick={() => navigateToConversation(client)}
                   >
@@ -329,7 +329,7 @@ const Clients = () => {
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center">
                           <span className="text-indigo-800 font-medium text-lg">
-                            {client.name ? client.name[0].toUpperCase() : client.phone_number[0]}
+                            {client.name ? client.name[0].toUpperCase() : client.phoneNumber[0]}
                           </span>
                         </div>
                         <div className="ml-4">
@@ -337,14 +337,14 @@ const Clients = () => {
                             {client.name || 'Unnamed Client'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {client.phone_number}
+                            {client.phoneNumber}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-2">
-                        {client.is_blocked ? (
+                        {client.isBlocked ? (
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                             Blocked
                           </span>
@@ -354,7 +354,7 @@ const Clients = () => {
                           </span>
                         )}
                         
-                        {client.is_regular && (
+                        {client.isRegular && (
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
                             Regular
                           </span>
@@ -375,13 +375,13 @@ const Clients = () => {
                             handleToggleRegular(client);
                           }}
                         >
-                          {client.is_regular ? 'Remove Regular' : 'Mark Regular'}
+                          {client.isRegular ? 'Remove Regular' : 'Mark Regular'}
                         </button>
                         <button
-                          className={client.is_blocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}
+                          className={client.isBlocked ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (client.is_blocked) {
+                            if (client.isBlocked) {
                               // Unblock directly
                               handleToggleBlock();
                             } else {
@@ -390,7 +390,7 @@ const Clients = () => {
                             }
                           }}
                         >
-                          {client.is_blocked ? 'Unblock' : 'Block'}
+                          {client.isBlocked ? 'Unblock' : 'Block'}
                         </button>
                       </div>
                     </td>
@@ -408,7 +408,7 @@ const Clients = () => {
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Block Client</h3>
             <p className="mb-4 text-gray-600">
-              Blocking {selectedClient.name || selectedClient.phone_number} will prevent them from sending messages to any of your profiles.
+              Blocking {selectedClient.name || selectedClient.phoneNumber} will prevent them from sending messages to any of your profiles.
             </p>
             
             <div className="mb-4">
