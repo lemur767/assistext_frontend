@@ -1,9 +1,12 @@
+// src/pages/Register.tsx - Updated for SignalWire integration
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { signalwireService, type SignalWireNumber, type PhoneNumberSearchParams } from '../services/signalwireService';
+import { toast } from 'react-hot-toast';
 import SignUpWithSelectPhone from '../components/profile/SignUpWithSelectPhone';
 
-// Type definitions
+// Type definitions updated for SignalWire
 interface FormData {
   username: string;
   email: string;
@@ -17,26 +20,9 @@ interface FormData {
   preferredCity: string;
 }
 
-interface PhoneNumberCapabilities {
-  sms: boolean;
-  voice: boolean;
-  mms: boolean;
-}
-
-interface AvailableNumber {
-  phone_number: string;
-  formatted_number: string;
-  locality: string;
-  region: string;
-  area_code: string;
-  setup_cost: string;
-  monthly_cost: string;
-  capabilities: PhoneNumberCapabilities;
-}
-
 interface ApiResponse {
   error?: string;
-  available_numbers?: AvailableNumber[];
+  success?: boolean;
   tokens?: {
     access_token: string;
     refresh_token: string;
@@ -47,8 +33,8 @@ interface ApiResponse {
 }
 
 interface CompleteSignupData extends FormData {
-  selected_phone_number: string;
-  profile_description: string;
+  selectedPhoneNumber: string;
+  profileDescription: string;
 }
 
 const Register: React.FC = () => {
@@ -57,8 +43,8 @@ const Register: React.FC = () => {
 
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [availableNumbers, setAvailableNumbers] = useState<AvailableNumber[]>([]);
-  const [selectedNumber, setSelectedNumber] = useState<AvailableNumber | null>(null);
+  const [availableNumbers, setAvailableNumbers] = useState<SignalWireNumber[]>([]);
+  const [selectedNumber, setSelectedNumber] = useState<SignalWireNumber | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<boolean>(false);
@@ -77,6 +63,20 @@ const Register: React.FC = () => {
     preferredCity: 'toronto'
   });
 
+  // City to area code mapping for Canada
+  const cityAreaCodes: Record<string, string[]> = {
+    toronto: ['416', '647', '437'],
+    ottawa: ['613', '343'],
+    mississauga: ['905', '289', '365'],
+    london: ['519', '226', '548'],
+    hamilton: ['905', '289'],
+    montreal: ['514', '438'],
+    vancouver: ['604', '778', '236'],
+    calgary: ['403', '587', '825'],
+    edmonton: ['780', '587', '825'],
+    winnipeg: ['204', '431']
+  };
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -91,32 +91,69 @@ const Register: React.FC = () => {
     }
   }, [currentStep, formData.preferredCity]);
 
-  // API call to load available phone numbers
+  // Load available phone numbers from SignalWire
   const loadAvailableNumbers = async (): Promise<void> => {
     setLoading(true);
     setError('');
     
     try {
-      const response = await fetch(`/api/signup/available-numbers?city=${formData.preferredCity}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const areaCodes = cityAreaCodes[formData.preferredCity] || ['416'];
+      const searchParams: PhoneNumberSearchParams = {
+        // Search in Canada (country code +1)
+        city: formData.preferredCity,
+        state: getProvinceForCity(formData.preferredCity),
+        areaCode: areaCodes[0], // Primary area code for the city
+        smsEnabled: true,
+        voiceEnabled: true,
+        mmsEnabled: true,
+        limit: 20
+      };
 
-      const data: ApiResponse = await response.json();
+      const numbers = await signalwireService.searchAvailableNumbers(searchParams);
       
-      if (response.ok && data.available_numbers) {
-        setAvailableNumbers(data.available_numbers);
+      if (numbers && numbers.length > 0) {
+        setAvailableNumbers(numbers);
       } else {
-        setError(data.error || 'Failed to load available numbers');
+        // Try searching with different area codes if no numbers found
+        const allAreaCodes = areaCodes.slice(1);
+        for (const areaCode of allAreaCodes) {
+          const fallbackParams = { ...searchParams, areaCode };
+          const fallbackNumbers = await signalwireService.searchAvailableNumbers(fallbackParams);
+          if (fallbackNumbers && fallbackNumbers.length > 0) {
+            setAvailableNumbers(fallbackNumbers);
+            break;
+          }
+        }
+        
+        if (availableNumbers.length === 0) {
+          setError('No phone numbers available in your selected city. Please try a different location.');
+        }
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error connecting to server';
+      console.error('Error loading available numbers:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load available phone numbers from SignalWire';
       setError(errorMessage);
+      toast.error('Failed to load phone numbers');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get province for city (for SignalWire API)
+  const getProvinceForCity = (city: string): string => {
+    const cityToProvince: Record<string, string> = {
+      toronto: 'ON',
+      ottawa: 'ON',
+      mississauga: 'ON',
+      london: 'ON',
+      hamilton: 'ON',
+      montreal: 'QC',
+      vancouver: 'BC',
+      calgary: 'AB',
+      edmonton: 'AB',
+      winnipeg: 'MB'
+    };
+    return cityToProvince[city] || 'ON';
   };
 
   // Handle input changes
@@ -129,7 +166,7 @@ const Register: React.FC = () => {
   };
 
   // Handle phone number selection
-  const handleNumberSelect = (number: AvailableNumber): void => {
+  const handleNumberSelect = (number: SignalWireNumber): void => {
     setSelectedNumber(number);
     if (error) {
       setError('');
@@ -141,70 +178,30 @@ const Register: React.FC = () => {
     switch (step) {
       case 1:
         return !!(
-          formData.username.trim() && 
-          formData.email.trim() && 
-          formData.password && 
+          formData.username &&
+          formData.email &&
+          formData.password &&
           formData.confirmPassword &&
-          formData.password === formData.confirmPassword &&
-          formData.password.length >= 8 &&
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) &&
-          /^[a-zA-Z0-9_-]+$/.test(formData.username) &&
-          formData.username.length >= 3
+          formData.firstName &&
+          formData.lastName &&
+          formData.password === formData.confirmPassword
         );
       case 2:
-        return !!formData.profileName.trim();
+        return !!(formData.profileName && formData.preferredCity);
       case 3:
         return !!selectedNumber;
-      case 4:
-        return !!(formData.username && formData.email && formData.password && 
-                 formData.profileName && selectedNumber);
       default:
-        return true;
+        return false;
     }
-  };
-
-  // Validation error messages
-  const getValidationErrors = (step: number): string[] => {
-    const errors: string[] = [];
-    
-    if (step === 1) {
-      if (!formData.username.trim()) errors.push('Username is required');
-      else if (formData.username.length < 3) errors.push('Username must be at least 3 characters');
-      else if (!/^[a-zA-Z0-9_-]+$/.test(formData.username)) errors.push('Username can only contain letters, numbers, underscores and hyphens');
-      
-      if (!formData.email.trim()) errors.push('Email is required');
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.push('Please enter a valid email address');
-      
-      if (!formData.password) errors.push('Password is required');
-      else if (formData.password.length < 8) errors.push('Password must be at least 8 characters');
-      
-      if (!formData.confirmPassword) errors.push('Please confirm your password');
-      else if (formData.password !== formData.confirmPassword) errors.push('Passwords do not match');
-    }
-    
-    if (step === 2 && !formData.profileName.trim()) {
-      errors.push('Profile name is required');
-    }
-    
-    if (step === 3 && !selectedNumber) {
-      errors.push('Please select a phone number');
-    }
-    
-    return errors;
   };
 
   // Navigation functions
   const handleNextStep = (): void => {
-    const validationErrors = getValidationErrors(currentStep);
-    
-    if (validationErrors.length > 0) {
-      setError(validationErrors[0]); // Show first error
-      return;
-    }
-    
     if (validateStep(currentStep)) {
       setCurrentStep(prev => prev + 1);
       setError('');
+    } else {
+      setError('Please fill in all required fields correctly.');
     }
   };
 
@@ -213,60 +210,81 @@ const Register: React.FC = () => {
     setError('');
   };
 
-  // Complete signup API call
+  // Complete signup with SignalWire phone number
   const handleCompleteSignup = async (): Promise<void> => {
     if (!selectedNumber) {
-      setError('Please select a phone number');
-      return;
-    }
-
-    if (!validateStep(4)) {
-      setError('Please fill in all required fields');
+      setError('Please select a phone number.');
       return;
     }
 
     setLoading(true);
     setError('');
-    
+
     try {
-      const signupData: CompleteSignupData = {
-        ...formData,
-        selected_phone_number: selectedNumber.phone_number,
-        profile_description: formData.profileDescription
+      // First register the user account
+      const registrationData = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        profileName: formData.profileName,
+        profileDescription: formData.profileDescription,
+        personalPhone: formData.personalPhone,
+        selectedPhoneNumber: selectedNumber.phoneNumber,
+        signalwireData: {
+          formattedNumber: selectedNumber.formattedNumber,
+          locality: selectedNumber.locality,
+          region: selectedNumber.region,
+          areaCode: selectedNumber.areaCode,
+          setupCost: selectedNumber.setupCost,
+          monthlyCost: selectedNumber.monthlyCost,
+          capabilities: selectedNumber.capabilities
+        }
       };
 
-      const response = await fetch('/api/signup/complete-signup', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(signupData)
+        body: JSON.stringify(registrationData),
       });
 
       const data: ApiResponse = await response.json();
 
-      if (response.ok && data.tokens) {
-        setSuccess(true);
-        
-        // Store authentication tokens
-        localStorage.setItem('access_token', data.tokens.access_token);
-        localStorage.setItem('refresh_token', data.tokens.refresh_token);
-        
-        // Store user data if provided
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
-        
-        // Redirect to dashboard after 3 seconds
-        setTimeout(() => {
+      if (response.ok && data.success) {
+        // Purchase the phone number through SignalWire
+        try {
+          await signalwireService.purchasePhoneNumber({
+            phoneNumber: selectedNumber.phoneNumber,
+            profileId: data.profile?.id || '',
+            friendlyName: `${formData.profileName} - ${formData.username}`
+          });
+
+          setSuccess(true);
+          toast.success('Account created successfully! Phone number activated.');
+          
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 2000);
+          
+        } catch (phoneError) {
+          console.error('Error purchasing phone number:', phoneError);
+          // Account was created but phone number purchase failed
+          toast.error('Account created, but phone number activation failed. Please contact support.');
           navigate('/dashboard');
-        }, 3000);
+        }
       } else {
-        setError(data.error || 'Registration failed. Please try again.');
+        setError(data.error || 'Failed to create account. Please try again.');
+        toast.error(data.error || 'Registration failed');
       }
     } catch (err) {
+      console.error('Registration error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Error creating account. Please try again.';
       setError(errorMessage);
+      toast.error('Registration failed');
     } finally {
       setLoading(false);
     }
