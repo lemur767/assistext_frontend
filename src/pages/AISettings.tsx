@@ -1,7 +1,7 @@
 import React from 'react';
 import { Users } from 'lucide-react';
 
-const ClientManagement: React.FC = () => {
+const AISettings: React.FC = () => {
   return (
     <div className="card p-6 text-center">
       <Users className="w-16 h-16 text-brand-secondary mx-auto mb-4" />
@@ -11,4 +11,4 @@ const ClientManagement: React.FC = () => {
   );
 };
 
-export default ClientManagement;
+export default AISettings;
