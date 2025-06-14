@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name : install dep
+        run: cd /opt/assistext_frontend
+             npm install
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
