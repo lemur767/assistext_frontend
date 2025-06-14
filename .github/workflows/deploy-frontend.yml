@@ -3,7 +3,7 @@ name: Deploy Frontend to Production
 
 on:
   push:
-    branches: [lemur767-production_assistext_front]
+    branches: [main, production]
   pull_request:
     branches: [main]
 
