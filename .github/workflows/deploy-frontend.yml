@@ -59,7 +59,7 @@ jobs:
           username: ${{ secrets.FRONTEND_USER }}
           key: ${{ secrets.FRONTEND_SSH_KEY }}
           script: |
-            cd /var/www/assistext
+            cd /opt/assistext_frontend
             
             # Pull latest code
             git pull origin main
@@ -68,17 +68,18 @@ jobs:
             npm ci --production=false
             npm run build
             
-            # Copy server files
+            # Copy server files to dist directory
             cp server.js dist/
-            cp ecosystem.config.js dist/
+            cp ecosystem.config.cjs dist/
             cp package*.json dist/
             
             # Install production dependencies in dist
             cd dist
             npm ci --only=production
             
-            # Restart PM2
-            pm2 restart assistext-frontend || pm2 start ecosystem.config.js
+            # Restart nginx
+            sudo systemctl restart nginx
             
-            # Save PM2 configuration
+            # Restart PM2 (note the .cjs extension)
+            pm2 restart assistext_frontend || pm2 start ecosystem.config.cjs
             pm2 save
