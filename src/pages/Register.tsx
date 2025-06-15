@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { signalwireService, type SignalWireNumber, type PhoneNumberSearchParams } from '../services/signalwireService';
 import { toast } from 'react-hot-toast';
-import SignUpWithSelectPhone from '../components/profile/SignUpWithSelectPhone';
+import { SignalWireAPI } from '../api/signalwire';
 
 // Type definitions updated for SignalWire
 interface FormData {
@@ -80,7 +80,7 @@ const Register: React.FC = () => {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      navigate('app/dashboard');
     }
   }, [isAuthenticated, navigate]);
 
@@ -109,7 +109,7 @@ const Register: React.FC = () => {
         limit: 20
       };
 
-      const numbers = await signalwireService.searchAvailableNumbers(searchParams);
+      const numbers = await SignalWireAPIi.searchAvailableNumbers(searchParams);
       
       if (numbers && numbers.length > 0) {
         setAvailableNumbers(numbers);
@@ -118,7 +118,7 @@ const Register: React.FC = () => {
         const allAreaCodes = areaCodes.slice(1);
         for (const areaCode of allAreaCodes) {
           const fallbackParams = { ...searchParams, areaCode };
-          const fallbackNumbers = await signalwireService.searchAvailableNumbers(fallbackParams);
+          const fallbackNumbers = await SignalWireAPI.searchAvailableNumbers(fallbackParams);
           if (fallbackNumbers && fallbackNumbers.length > 0) {
             setAvailableNumbers(fallbackNumbers);
             break;
@@ -256,7 +256,7 @@ const Register: React.FC = () => {
       if (response.ok && data.success) {
         // Purchase the phone number through SignalWire
         try {
-          await signalwireService.purchasePhoneNumber({
+          await SignalWireAPI.purchasePhoneNumber({
             phoneNumber: selectedNumber.phoneNumber,
             profileId: data.profile?.id || '',
             friendlyName: `${formData.profileName} - ${formData.username}`

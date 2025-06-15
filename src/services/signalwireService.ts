@@ -1,7 +1,7 @@
 // src/services/signalwireService.ts - Fixed to use your existing apiClient
 import apiClient  from './apiClient.ts';
 
-// Types for SignalWire operations
+
 export interface SMSMessage {
   id?: string;
   to: string;
