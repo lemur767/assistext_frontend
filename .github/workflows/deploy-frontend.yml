@@ -59,12 +59,14 @@ jobs:
       - name: Build for production
         run: npm run build
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Execute remote SSH commands and deploy
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.FRONTEND_HOST }}
           username: ${{ secrets.FRONTEND_USER }}
+          
           key: ${{ secrets.FRONTEND_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd /opt/assistext_frontend
             
