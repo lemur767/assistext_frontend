@@ -1,7 +1,8 @@
 // src/api/client.ts - Building on our existing auth
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://backend.assitext.ca';
+import dotenv from 'dotenv';
 
-export const apiClient = async (endpoint: string, options: RequestInit = {}) => {
+export const apiClients = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
   
   // Get tokens from our existing auth context

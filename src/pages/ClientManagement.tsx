@@ -1,7 +1,7 @@
 // src/pages/ClientManagement.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { clientsAPI } from '../api/clients';
+import { apiClients } from '../api/clients.ts';
 import { Search, Filter, MoreVertical, Phone, Mail, Tag, Flag, Archive } from 'lucide-react';
 
 interface Client {

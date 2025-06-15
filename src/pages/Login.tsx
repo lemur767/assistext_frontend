@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { AuthContext } from '../context/AuthContext';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle, Loader } from 'lucide-react';
 
 interface LoginFormData {
@@ -10,7 +10,7 @@ interface LoginFormData {
 }
 
 const Login: React.FC = () => {
-  const { login, isAuthenticated, error, clearError, isLoading } = useAuth();
+  const { login, isAuthenticated, error, clearError, isLoading } = AuthContext;
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -24,10 +24,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  // Clear errors when component mounts or when form data changes
-  useEffect(() => {
-    clearError();
-  }, [clearError]);
+ 
 
   useEffect(() => {
     if (validationErrors.email || validationErrors.password) {
@@ -98,7 +95,8 @@ const Login: React.FC = () => {
     showPasswordToggle?: boolean;
     error?: string;
   }> = ({ label, name, type = 'text', placeholder, icon: Icon, showPasswordToggle = false, error }) => (
-    <div>
+    <div className="flex flex-col m-0 vw-fit h-screen-100">
+    <div className="flex flex-col p-4 m-0 justify-center align-center box-shadow">
       <label className="form-label">{label}</label>
       <div className="relative">
         <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted" />
@@ -130,6 +128,7 @@ const Login: React.FC = () => {
           {error}
         </p>
       )}
+    </div>
     </div>
   );
 
@@ -196,7 +195,7 @@ const Login: React.FC = () => {
         <button
           type="submit"
           disabled={isSubmitting || isLoading}
-          className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+          className="btn-primary group:hover btn-lg width-25% w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting || isLoading ? (
             <Loader className="w-5 h-5 animate-spin mr-2" />

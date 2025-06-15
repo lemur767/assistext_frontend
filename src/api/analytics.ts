@@ -1,5 +1,5 @@
 // src/api/analytics.ts - Integrate with our dashboard
-import { apiClient } from './client';
+import { apiClients } from './clients.ts';
 import type { DashboardStats, DashboardData } from '../types';
 
 export const analyticsAPI = {

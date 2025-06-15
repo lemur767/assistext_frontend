@@ -7,7 +7,7 @@ interface TopHeaderProps {
   isMobile: boolean;
 }
 
-export const TopHeader: React.FC<TopHeaderProps> = ({ 
+const TopHeader: React.FC<TopHeaderProps> = ({ 
   onToggleSidebar, 
   isSidebarOpen, 
   isMobile 
@@ -99,3 +99,5 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
     </header>
   );
 };
+
+export default TopHeader;

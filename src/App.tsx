@@ -1,7 +1,8 @@
 // src/App.tsx - Complete with all our pages
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, ProtectedRoute } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/common/ProtectedRoute'
 import { Toaster } from 'react-hot-toast';
 
 // Import our existing pages

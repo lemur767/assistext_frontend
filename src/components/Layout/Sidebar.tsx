@@ -35,25 +35,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ${isOpen ? 'w-64' : 'w-16'}
     ${isMobile && !isOpen ? '-translate-x-full' : ''}
   `;
+const enhancedSidebarLogo = (
+  <div className="p-4 border-b border-slate-200">
+    <div className="flex items-center space-x-3">
+      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+        <span className="text-white font-bold text-xl">A</span>
+      </div>
+      {isOpen && (
+        <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          AssisText
+        </div>
+      )}
+    </div>
+  </div>
+);
+  // Add icon animation
+  const iconClass = "group-hover:scale-110 transition-transform";
+
+  const navLinkClass = "flex items-center gap-3 px-3 py-3 rounded-xl text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 group";
 
   return (
     <aside className={sidebarClasses}>
-      {/* Logo Section */}
-      <div className={`p-4 border-b border-neutral-200 dark:border-neutral-700 ${
-        isOpen ? '' : 'px-2'
-      }`}>
-        <div className="flex items-center gap-3">
-          <div className="profile-avatar w-10 h-10 text-sm bg-gradient-to-br from-primary to-accent dark:from-primary-dark dark:to-accent-dark">
-            AT
-          </div>
-          {isOpen && (
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-theme truncate">AssisText</h1>
-              <p className="text-xs text-neutral-500 truncate">SMS AI Platform</p>
-            </div>
-          )}
-        </div>
+      <div className="p-4 border-b border-slate-200">
+    <div className="flex items-center space-x-3">
+      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+        <span className="text-white font-bold text-xl">A</span>
       </div>
+      {isOpen && (
+        <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          AssisText
+        </div>
+      )}
+    </div>
+  </div>
+
 
       {/* Profile Selector */}
       {isOpen && (
@@ -122,3 +137,5 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </aside>
   );
 };
+
+export default Sidebar;
