@@ -1,24 +1,26 @@
 {
-  "name": "assistext_frontend",
+  "name": "assistext-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:prod": "NODE_ENV=production vite build",
+    "build:prod": "NODE_ENV=production tsc && vite build --mode production",
     "preview": "vite preview",
-    "deploy": "npm run build:prod && npm run deploy:production",
-    "deploy:production": "node deploy.js",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext ts,tsx --fix"
+    "deploy": "npm run build:prod && npm run deploy:server",
+    "deploy:server": "rsync -avz --delete dist/ ubuntu@172.237.149.65:/var/www/assistext/",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.80.7",
+    "axios": "^1.10.0",
+    "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.20.1",
-    "lucide-react": "^0.294.0"
+    "react-hot-toast": "^2.4.1",
+    "react-router-dom": "^6.20.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",

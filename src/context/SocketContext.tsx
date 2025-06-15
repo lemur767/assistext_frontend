@@ -5,12 +5,14 @@ import { AuthContext } from './AuthContext';
 interface SocketContextType {
   socket: Socket | null;
   isConnected: boolean;
+
 }
 
 // Create the initial context
 export const SocketContext = createContext<SocketContextType>({
   socket: null,
   isConnected: false,
+
 });
 
 // Provider component
