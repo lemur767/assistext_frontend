@@ -1,7 +1,7 @@
 // src/pages/Register.tsx - Updated for SignalWire integration
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { AuthContext } from '../context/AuthContext';
 import { signalwireService, type SignalWireNumber, type PhoneNumberSearchParams } from '../services/signalwireService';
 import { toast } from 'react-hot-toast';
 import SignUpWithSelectPhone from '../components/profile/SignUpWithSelectPhone';
@@ -38,7 +38,7 @@ interface CompleteSignupData extends FormData {
 }
 
 const Register: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = AuthContext;
   const navigate = useNavigate();
 
   // Multi-step form state
