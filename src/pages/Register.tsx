@@ -5,7 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import { signalwireService, type SignalWireNumber, type PhoneNumberSearchParams } from '../services/signalwireService';
 import { toast } from 'react-hot-toast';
 import { SignalWireAPI } from '../api/signalwire';
-import {SignUpWithSelectPhone} from '../components/profile/SignUpWithSelectPhone'
+import SignUpWithSelectPhone from '../components/profile/SignUpWithSelectPhone'
 
 // Type definitions updated for SignalWire
 interface FormData {
