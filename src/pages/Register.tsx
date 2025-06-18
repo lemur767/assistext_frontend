@@ -94,52 +94,36 @@ const Register: React.FC = () => {
 
   // Load available phone numbers from SignalWire
   const loadAvailableNumbers = async (): Promise<void> => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      const areaCodes = cityAreaCodes[formData.preferredCity] || ['416'];
-      const searchParams: PhoneNumberSearchParams = {
-        // Search in Canada (country code +1)
+  setLoading(true);
+  setError('');
+  
+  try {
+    // Use the new search endpoint
+    const response = await fetch('/api/signup/search-numbers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         city: formData.preferredCity,
-        state: getProvinceForCity(formData.preferredCity),
-        areaCode: areaCodes[0], // Primary area code for the city
-        smsEnabled: true,
-        voiceEnabled: true,
-        mmsEnabled: true,
-        limit: 20
-      };
+        // Or specify area_code directly: area_code: '416'
+      }),
+    });
 
-      const numbers = await SignalWireAPIi.searchAvailableNumbers(searchParams);
-      
-      if (numbers && numbers.length > 0) {
-        setAvailableNumbers(numbers);
-      } else {
-        // Try searching with different area codes if no numbers found
-        const allAreaCodes = areaCodes.slice(1);
-        for (const areaCode of allAreaCodes) {
-          const fallbackParams = { ...searchParams, areaCode };
-          const fallbackNumbers = await SignalWireAPI.searchAvailableNumbers(fallbackParams);
-          if (fallbackNumbers && fallbackNumbers.length > 0) {
-            setAvailableNumbers(fallbackNumbers);
-            break;
-          }
-        }
-        
-        if (availableNumbers.length === 0) {
-          setError('No phone numbers available in your selected city. Please try a different location.');
-        }
-      }
-    } catch (err) {
-      console.error('Error loading available numbers:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load available phone numbers from SignalWire';
-      setError(errorMessage);
-      toast.error('Failed to load phone numbers');
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+    
+    if (response.ok && data.available_numbers) {
+      setAvailableNumbers(data.available_numbers);
+    } else {
+      setError(data.error || 'No phone numbers available in your selected city.');
     }
-  };
-
+  } catch (err) {
+    console.error('Error loading available numbers:', err);
+    setError('Failed to load available phone numbers.');
+  } finally {
+    setLoading(false);
+  }
+};
   // Get province for city (for SignalWire API)
   const getProvinceForCity = (city: string): string => {
     const cityToProvince: Record<string, string> = {
@@ -213,83 +197,60 @@ const Register: React.FC = () => {
 
   // Complete signup with SignalWire phone number
   const handleCompleteSignup = async (): Promise<void> => {
-    if (!selectedNumber) {
-      setError('Please select a phone number.');
-      return;
-    }
+  if (!selectedNumber) {
+    setError('Please select a phone number.');
+    return;
+  }
 
-    setLoading(true);
-    setError('');
+  setLoading(true);
+  setError('');
 
-    try {
-      // First register the user account
-      const registrationData = {
+  try {
+    const response = await fetch('/api/signup/complete-signup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         username: formData.username,
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
         firstName: formData.firstName,
         lastName: formData.lastName,
         profileName: formData.profileName,
         profileDescription: formData.profileDescription,
         personalPhone: formData.personalPhone,
-        selectedPhoneNumber: selectedNumber.phoneNumber,
-        signalwireData: {
-          formattedNumber: selectedNumber.formattedNumber,
-          locality: selectedNumber.locality,
-          region: selectedNumber.region,
-          areaCode: selectedNumber.areaCode,
-          setupCost: selectedNumber.setupCost,
-          monthlyCost: selectedNumber.monthlyCost,
-          capabilities: selectedNumber.capabilities
-        }
-      };
+        selectedPhoneNumber: selectedNumber.phone_number, // Changed from phoneNumber
+        timezone: 'America/Toronto'
+      }),
+    });
 
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData),
-      });
+    const data = await response.json();
 
-      const data: ApiResponse = await response.json();
-
-      if (response.ok && data.success) {
-        // Purchase the phone number through SignalWire
-        try {
-          await SignalWireAPI.purchasePhoneNumber({
-            phoneNumber: selectedNumber.phoneNumber,
-            profileId: data.profile?.id || '',
-            friendlyName: `${formData.profileName} - ${formData.username}`
-          });
-
-          setSuccess(true);
-          toast.success('Account created successfully! Phone number activated.');
-          
-          // Redirect to dashboard after a short delay
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 2000);
-          
-        } catch (phoneError) {
-          console.error('Error purchasing phone number:', phoneError);
-          // Account was created but phone number purchase failed
-          toast.error('Account created, but phone number activation failed. Please contact support.');
-          navigate('/dashboard');
-        }
-      } else {
-        setError(data.error || 'Failed to create account. Please try again.');
-        toast.error(data.error || 'Registration failed');
-      }
-    } catch (err) {
-      console.error('Registration error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Error creating account. Please try again.';
-      setError(errorMessage);
-      toast.error('Registration failed');
-    } finally {
-      setLoading(false);
+    if (response.ok && data.success) {
+      // Store auth token
+      localStorage.setItem('authToken', data.access_token);
+      
+      toast.success('Account created successfully! Phone number activated for SMS AI.');
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+      
+    } else {
+      setError(data.error || 'Failed to create account. Please try again.');
+      toast.error(data.error || 'Registration failed');
     }
-  };
+  } catch (err) {
+    console.error('Registration error:', err);
+    setError('Error creating account. Please try again.');
+    toast.error('Registration failed');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Force reload numbers when city changes
   const handleCityChange = (field: keyof FormData, value: string): void => {
