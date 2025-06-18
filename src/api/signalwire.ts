@@ -1,5 +1,9 @@
 // src/api/signalwire.ts - API endpoints for SignalWire integration
+<<<<<<< HEAD
 import apiClients from './clients';
+=======
+import  apiClients from './clients';
+>>>>>>> b76446d (Working Frontend)
 
 export interface SendSMSRequest {
   to: string;
