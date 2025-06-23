@@ -1,6 +1,7 @@
 // src/pages/LandingPage.tsx - Beautiful modern landing page
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 
 useEffect(() => {
   document.title = 'AssisText - AI-Powered SMS Management';
