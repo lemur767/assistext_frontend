@@ -25,7 +25,11 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
+
           {/* Auth Routes */}
+          <Route path="/auth" element={<AuthLayout />
+        
+        }/>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           

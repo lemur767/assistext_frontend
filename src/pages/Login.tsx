@@ -143,24 +143,15 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+        <>
         <div className="text-center mb-8">
-          <div className="inline-flex items-center space-x-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <Mail className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              AssisText
-            </h1>
-          </div>
+      
+     
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
           <p className="text-gray-600">Sign in to your AssisText account</p>
         </div>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+            
           {/* Global Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
@@ -170,10 +161,9 @@ const Login: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
+   {/* Login Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+           {/* Username Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Username
@@ -260,41 +250,35 @@ const Login: React.FC = () => {
               </a>
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-lg hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader className="w-5 h-5 animate-spin" />
-                  <span>Signing In...</span>
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="w-5 h-5" />
-                  <span>Sign In</span>
-                </>
-              )}
-            </button>
-          </form>
+             <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full btn-primary flex items-center justify-center space-x-2"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader className="w-5 h-5 animate-spin" />
+              <span>Signing In...</span>
+            </>
+          ) : (
+            <>
+              <ArrowRight className="w-5 h-5" />
+              <span>Sign In</span>
+            </>
+          )}
+        </button>
+      </form>
 
-          {/* Form Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-gray-600">
-              Don't have an account?{' '}
-              
-                <a href="/register"
-                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
-              >
-                Create one here
-              </a>
-            </p>
-          </div>
-        </div>
+      {/* Form Footer */}
+      <div className="mt-8 text-center">
+        <p className="text-muted">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-brand-primary hover:text-brand-secondary font-medium transition-colors">
+            Sign up here
+          </Link>
+        </p>
       </div>
-    </div>
+    </>
   );
 };
 

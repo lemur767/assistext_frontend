@@ -2,6 +2,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+useEffect(() => {
+  document.title = 'AssisText - AI-Powered SMS Management';
+  document.querySelector('meta[name="description"]')?.setAttribute('content', 
+    'Professional AI-powered SMS management that responds intelligently...');
+}, []);
+
 const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
