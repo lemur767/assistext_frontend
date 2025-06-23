@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute'
+import PublicRoute from './components/common/PublicRoute'
 import { Toaster } from 'react-hot-toast';
 
 // Import our existing pages
@@ -25,14 +26,15 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-
-          {/* Auth Routes */}
-          <Route path="/auth" element={<AuthLayout />
-        
-        }/>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
+      <Route path="/auth" element={
+        <PublicRoutes>
+          <AuthLayout />
+        </PublicRoutes>
+      }>
+          <Route path="/" element={<LandingPage/>} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+        </Route>
           {/* Protected App Routes */}
           <Route path="/app" element={
             <ProtectedRoute>
@@ -50,7 +52,7 @@ function App() {
           </Route>
           
           {/* Redirects */}
-          <Route path="/" element={<Navigate to="/app/dashboard" />} />
+       
           <Route path="/app" element={<Navigate to="/app/dashboard" />} />
         </Routes>
         
