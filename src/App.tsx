@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute'
 import PublicRoute from './components/common/PublicRoute'
 import { Toaster } from 'react-hot-toast';
+import LandingPage from './pages/LandingPage'
 
 // Import our existing pages
 import Login from './pages/Login';
