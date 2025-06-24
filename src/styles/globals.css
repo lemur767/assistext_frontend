@@ -116,7 +116,7 @@
   .btn-secondary {
     background-color: var(--secondary-color);
     color: white;
-    @apply hover:shadow-lg transform hover:-translate-y-0.5;
+    @apply hover:shadow-lg p-8 transform hover:-translate-y-0.5;
   }
   
   .btn-secondary:hover {
@@ -124,7 +124,7 @@
   }
   
   .btn-accent {
-    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 focus:ring-purple-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
+    @apply bg-gradient-to-r p-8 from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 focus:ring-purple-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
   }
   
   .btn-outline {
