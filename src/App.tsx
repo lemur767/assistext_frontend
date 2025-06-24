@@ -28,16 +28,14 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<LandingPage/>} />
-      <Route path="/auth" element={
-        <PublicRoute>
-          <AuthLayout />
-        </PublicRoute>
-      }>
-          
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-        </Route>
+          <PublicRoute>
+            <AuthLayout>
+              <Route path="/" element={<LandingPage/>} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+            </AuthLayout>
+          </PublicRoute>
+        
           {/* Protected App Routes */}
           <Route path="/app" element={
             <ProtectedRoute>
@@ -58,8 +56,7 @@ function App() {
        
           <Route path="/app" element={<Navigate to="/app/dashboard" />} />
         </Routes>
-        
-        <Toaster position="top-right" />
+          <Toaster position="top-right" />
       </Router>
     </AuthProvider>
   );

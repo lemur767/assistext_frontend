@@ -58,10 +58,10 @@ const AuthLayout: React.FC = () => {
 
               {/* Auth Buttons */}
               <div className="flex items-center space-x-4">
-                <Link to="/login" className="text-muted hover:text-primary transition-colors hidden sm:inline-flex">
+                <Link to="/login" className="text-muted p-8 hover:text-primary transition-colors hidden sm:inline-flex">
                   Sign In
                 </Link>
-                <Link to="/register" className="btn-primary">
+                <Link to="/register" className="btn-primary p-8">
                   Get Started
                 </Link>
               </div>
