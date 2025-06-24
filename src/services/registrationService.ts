@@ -1,6 +1,6 @@
 // src/services/registrationService.ts - Registration flow with live SignalWire integration
 
-import apiClient from './client';
+import { apiClient } from './apiClient';
 
 export interface RegistrationPhoneNumber {
   phone_number: string;
@@ -69,23 +69,13 @@ export class RegistrationService {
     try {
       console.log(`Searching for phone numbers in ${city}...`);
       
-      const response = await fetch('/api/signup/search-numbers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ city: city.toLowerCase() }),
+      const response = await apiClient.post<PhoneSearchResponse>('/api/signup/search-numbers', { 
+        city: city.toLowerCase() 
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || `Failed to search phone numbers: ${response.status}`);
-      }
-
-      console.log(`Found ${data.available_numbers?.length || 0} numbers for ${city}`);
+      console.log(`Found ${response.data.available_numbers?.length || 0} numbers for ${city}`);
       
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error searching phone numbers:', error);
       throw new Error(`Failed to load phone numbers for ${city}: ${error.message}`);
@@ -99,23 +89,11 @@ export class RegistrationService {
     try {
       console.log(`Completing signup for ${signupData.username} with number ${signupData.selectedPhoneNumber}`);
       
-      const response = await fetch('/api/signup/complete-signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(signupData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || `Signup failed: ${response.status}`);
-      }
+      const response = await apiClient.post<SignupResponse>('/api/signup/complete-signup', signupData);
 
       console.log(`Signup completed successfully for ${signupData.username}`);
       
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error completing signup:', error);
       throw new Error(`Registration failed: ${error.message}`);
@@ -134,17 +112,16 @@ export class RegistrationService {
     }>;
   }> {
     try {
-      const response = await fetch('/api/signup/cities', {
-        method: 'GET',
-      });
+      const response = await apiClient.get<{
+        cities: Array<{
+          name: string;
+          value: string;
+          area_codes: string[];
+          primary_area_code: string;
+        }>;
+      }>('/api/signup/cities');
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(`Failed to get cities: ${response.status}`);
-      }
-
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error getting supported cities:', error);
       throw new Error(`Failed to load cities: ${error.message}`);
@@ -159,16 +136,12 @@ export class RegistrationService {
     error?: string;
   }> {
     try {
-      const response = await fetch('/api/signup/validate-username', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username }),
-      });
+      const response = await apiClient.post<{
+        available: boolean;
+        error?: string;
+      }>('/api/signup/validate-username', { username });
 
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error validating username:', error);
       return { available: false, error: 'Validation failed' };
@@ -183,16 +156,12 @@ export class RegistrationService {
     error?: string;
   }> {
     try {
-      const response = await fetch('/api/signup/validate-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
+      const response = await apiClient.post<{
+        available: boolean;
+        error?: string;
+      }>('/api/signup/validate-email', { email });
 
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
       console.error('Error validating email:', error);
       return { available: false, error: 'Validation failed' };

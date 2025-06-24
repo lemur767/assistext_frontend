@@ -1,6 +1,6 @@
 // src/services/phoneSearchService.ts - Updated for live SignalWire integration
 
-import { apiRequest } from './api';
+import {apiClient} from './apiClient';
 
 export interface PhoneSearchFilters {
   city?: string;
@@ -76,7 +76,7 @@ export class PhoneSearchService {
    */
   static async searchAvailableNumbers(filters: PhoneSearchFilters): Promise<PhoneSearchResponse> {
     try {
-      const response = await apiRequest('/api/phone-search', {
+      const response = await apiClient('/api/phone-search', {
         method: 'POST',
         body: JSON.stringify(filters),
         headers: {
@@ -96,7 +96,7 @@ export class PhoneSearchService {
    */
   static async validatePhoneNumber(phoneNumber: string): Promise<PhoneValidationResponse> {
     try {
-      const response = await apiRequest('/api/phone-validate', {
+      const response = await apiClient('/api/phone-validate', {
         method: 'POST',
         body: JSON.stringify({ phone_number: phoneNumber }),
         headers: {
@@ -120,7 +120,7 @@ export class PhoneSearchService {
     profileId?: string
   ): Promise<PhonePurchaseResponse> {
     try {
-      const response = await apiRequest('/api/signalwire/phone-numbers/purchase', {
+      const response = await apiClient('/api/signalwire/phone-numbers/purchase', {
         method: 'POST',
         body: JSON.stringify({
           phone_number: phoneNumber,
@@ -151,7 +151,7 @@ export class PhoneSearchService {
     }>;
   }> {
     try {
-      const response = await apiRequest('/api/signup/cities', {
+      const response = await apiClient('/api/signup/cities', {
         method: 'GET',
       });
 
@@ -176,7 +176,7 @@ export class PhoneSearchService {
     };
   }> {
     try {
-      const response = await apiRequest('/api/signalwire/test-connection', {
+      const response = await apiClient('/api/signalwire/test-connection', {
         method: 'GET',
       });
 
