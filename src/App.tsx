@@ -29,9 +29,9 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage/>} />
       <Route path="/auth" element={
-        <PublicRoutes>
+        <PublicRoute>
           <AuthLayout />
-        </PublicRoutes>
+        </PublicRoute>
       }>
           
           <Route path="login" element={<Login />} />
