@@ -9,7 +9,7 @@
     "build:prod": "NODE_ENV=production tsc && vite build --mode production",
     "preview": "vite preview",
     "deploy": "npm run build:prod && npm run deploy:server",
-    "deploy:server": "rsync -avz --delete dist/ ubuntu@172.237.149.65:/var/www/assistext/",
+    "deploy:server": "rsync -avz --copy server.js dist/ --copy ecosystem.config.cjs dist/ --copy package* dist/ ubuntu@172.236.112.128:/opt/assistext_frontend/dist",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
