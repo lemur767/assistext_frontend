@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { SignUpWithSelectPhone } from '../components/profile/SignUpWithSelectPhone';
 import { AuthContext } from '../context/AuthContext';
 import RegistrationService, { 
   RegistrationPhoneNumber, 

@@ -1,6 +1,6 @@
 // src/services/registrationService.ts - Registration flow with live SignalWire integration
 
-import apiRequest from '../api/profile';
+import apiClient from './client';
 
 export interface RegistrationPhoneNumber {
   phone_number: string;
