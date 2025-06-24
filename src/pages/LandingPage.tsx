@@ -3,11 +3,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 
-useEffect(() => {
-  document.title = 'AssisText - AI-Powered SMS Management';
-  document.querySelector('meta[name="description"]')?.setAttribute('content', 
-    'Professional AI-powered SMS management that responds intelligently...');
-}, []);
 
 const LandingPage: React.FC = () => {
   return (
