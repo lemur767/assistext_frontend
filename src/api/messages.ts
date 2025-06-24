@@ -1,70 +1,41 @@
-import axios from './index';
-import type { Message, ConversationSummary } from '../types';
+// src/api/messages.ts - Integrate with our messaging interface
+import { apiClient } from './client';
 
-// Get messages between a profile and a client
-export const getMessages = async (profileId: number, clientPhone: string) => {
-  const response = await axios.get(`/api/profiles/${profileId}/messages/${clientPhone}`);
-  return response.data as Message[];
-};
+export const messagesAPI = {
+  async getConversations(profileId: string, page = 1, limit = 20) {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    const data = await apiClient(`/api/profiles/${profileId}/conversations?${params}`);
+    return data;
+  },
 
-// Send a message
-export const sendMessage = async (profileId: number, recipient: string, message: string) => {
-  const response = await axios.post('/api/messages/send', {
-    profile_id: profileId,
-    recipient,
-    message
-  });
-  return response.data as Message;
-};
+  async getMessages(conversationId: string, page = 1, limit = 50) {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+    });
+    const data = await apiClient(`/api/conversations/${conversationId}/messages?${params}`);
+    return data;
+  },
 
-// Mark messages as read
-export const markMessagesAsRead = async (profileId: number, senderNumber: string) => {
-  const response = await axios.post('/api/messages/read', {
-    profile_id: profileId,
-    sender_number: senderNumber
-  });
-  return response.data;
-};
+  async sendMessage(profileId: string, toNumber: string, content: string) {
+    const data = await apiClient('/api/messages/send', {
+      method: 'POST',
+      body: JSON.stringify({
+        profile_id: profileId,
+        to_number: toNumber,
+        content,
+      }),
+    });
+    return data;
+  },
 
-// Get conversations for a profile
-export const getConversations = async (profileId: number) => {
-  const response = await axios.get(`/api/profiles/${profileId}/conversations`);
-  return response.data as ConversationSummary[];
-};
-
-// Get flagged messages for a profile
-export const getFlaggedMessages = async (profileId: number) => {
-  const response = await axios.get(`/api/profiles/${profileId}/flagged_messages`);
-  return response.data as Message[];
-};
-
-// Review flagged message
-export const reviewFlaggedMessage = async (messageId: number, reviewData: { is_approved: boolean; notes?: string }) => {
-  const response = await axios.post(`/api/messages/${messageId}/review`, reviewData);
-  return response.data;
-};
-
-// Get message stats for a profile
-export const getMessageStats = async (profileId: number, period: 'day' | 'week' | 'month' = 'week') => {
-  const response = await axios.get(`/api/profiles/${profileId}/message_stats?period=${period}`);
-  return response.data;
-};
-
-// Export conversation history
-export const exportConversation = async (profileId: number, clientPhone: string, format: 'csv' | 'json' = 'csv') => {
-  const response = await axios.get(
-    `/api/profiles/${profileId}/export_conversation/${clientPhone}?format=${format}`,
-    { responseType: 'blob' }
-  );
-  
-  // Create download link
-  const url = window.URL.createObjectURL(new Blob([response.data]));
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', `conversation_${clientPhone}_${new Date().toISOString().slice(0, 10)}.${format}`);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  
-  return true;
+  async generateAIResponse(messageId: string) {
+    const data = await apiClient(`/api/messages/${messageId}/ai-response`, {
+      method: 'POST',
+    });
+    return data;
+  }
 };

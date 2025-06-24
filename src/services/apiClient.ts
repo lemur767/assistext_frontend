@@ -4,7 +4,7 @@ class ApiClient {
   private baseURL: string;
   private token: string | null = null;
 
-  constructor(baseURL: string = process.env.REACT_APP_API_URL || 'http://localhost:5000') {
+  constructor(baseURL: string = import.meta.REACT_APP_API_URL || 'http://localhost:5000') {
     this.baseURL = baseURL;
     this.token = localStorage.getItem('auth_token');
   }
@@ -97,4 +97,5 @@ class ApiClient {
   }
 }
 
-export const apiClient = new ApiClient();
+const apiClient = new ApiClient();
+export default apiClient;

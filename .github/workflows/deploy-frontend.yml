@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+  
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -23,13 +23,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install terser (required for production builds)
+        run: npm install --save-dev terser
+
       - name: Build application
         run: npm run build
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/lemur767-production_assistext_front'
+    # Fix: Deploy on push to main or production branches
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production')
     
     steps:
       - name: Checkout code
@@ -44,6 +48,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install terser (required for production builds)
+        run: npm install --save-dev terser
+
       - name: Create production env file
         run: |
           echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env.production
@@ -52,33 +59,40 @@ jobs:
       - name: Build for production
         run: npm run build
 
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v1.0.0
+      - name: Execute remote SSH commands and deploy
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.FRONTEND_HOST }}
           username: ${{ secrets.FRONTEND_USER }}
+          
           key: ${{ secrets.FRONTEND_SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd /var/www/assistext
+            cd /opt/assistext_frontend
             
             # Pull latest code
             git pull origin main
             
             # Install dependencies and build
             npm ci --production=false
+            
+            # Install terser for production builds
+            npm install --save-dev terser
+            
             npm run build
             
-            # Copy server files
+            # Copy server files to dist directory
             cp server.js dist/
-            cp ecosystem.config.js dist/
+            cp ecosystem.config.cjs dist/
             cp package*.json dist/
             
             # Install production dependencies in dist
             cd dist
             npm ci --only=production
             
-            # Restart PM2
-            pm2 restart assistext-frontend || pm2 start ecosystem.config.js
+            # Restart nginx
+            sudo systemctl restart nginx
             
-            # Save PM2 configuration
+            # Restart PM2 (note the .cjs extension)
+            pm2 restart assistext_frontend || pm2 start ecosystem.config.cjs
             pm2 save

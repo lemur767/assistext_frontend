@@ -1,27 +1,33 @@
 {
   "name": "assistext-frontend",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "build:prod": "NODE_ENV=production tsc && vite build --mode production",
     "preview": "vite preview",
+    "deploy": "npm run build:prod && npm run deploy:server",
+    "deploy:server": "rsync -avz --copy server.js dist/ --copy ecosystem.config.cjs dist/ --copy package* dist/ ubuntu@172.236.112.128:/opt/assistext_frontend/dist",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "axios": "^1.6.2",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
+    "@tanstack/react-query": "^5.80.7",
+    "axios": "^1.10.0",
+    "dotenv": "^16.5.0",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.57.0",
     "react-hot-toast": "^2.4.1",
-    "react-router-dom": "^6.20.1"
+    "react-router-dom": "^6.20.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.7",
-    "@tailwindcss/typography": "^0.5.10",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
@@ -33,6 +39,7 @@
     "eslint-plugin-react-refresh": "^0.4.4",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
+    "terser": "^5.43.1",
     "typescript": "^5.2.2",
     "vite": "^6.3.5"
   }

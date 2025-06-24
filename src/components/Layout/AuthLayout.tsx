@@ -1,8 +1,12 @@
+// src/components/Layout/AuthLayout.tsx - Updated to handle landing page and navigation
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { MessageSquare, Shield, Brain, Zap } from 'lucide-react';
 
 const AuthLayout: React.FC = () => {
+  const location = useLocation();
+  const isLandingPage = location.pathname === '/';
+
   const features = [
     {
       icon: Brain,
@@ -23,9 +27,52 @@ const AuthLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen surface-bg">
+      {/* Navigation Header - Only show on landing page */}
+      {isLandingPage && (
+        <header className="relative z-50 border-b border-brand/10">
+          <nav className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <Link to="/" className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold gradient-text">AssisText</h1>
+              </Link>
+
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-8">
+                <a href="#features" className="text-muted hover:text-primary transition-colors">
+                  Features
+                </a>
+                <a href="#pricing" className="text-muted hover:text-primary transition-colors">
+                  Pricing
+                </a>
+                <a href="#about" className="text-muted hover:text-primary transition-colors">
+                  About
+                </a>
+                <a href="#contact" className="text-muted hover:text-primary transition-colors">
+                  Contact
+                </a>
+              </div>
+
+              {/* Auth Buttons */}
+              <div className="flex items-center space-x-4">
+                <Link to="/login" className="text-muted p-8 hover:text-primary transition-colors hidden sm:inline-flex">
+                  Sign In
+                </Link>
+                <Link to="/register" className="btn-primary p-8">
+                  Get Started
+                </Link>
+              </div>
+            </div>
+          </nav>
+        </header>
+      )}
+
       <div className="flex min-h-screen">
-        {/* Left Side - Branding & Features */}
-        <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-center p-12 surface-card">
+        {/* Left Side - Branding & Features (hide on small screens for auth pages) */}
+        <div className={`${isLandingPage ? 'hidden' : 'hidden lg:flex'} lg:w-1/2 xl:w-3/5 flex-col justify-center p-12 surface-card`}>
           <div className="max-w-lg">
             {/* Logo Section */}
             <div className="flex items-center space-x-3 mb-8">
@@ -79,39 +126,117 @@ const AuthLayout: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Side - Auth Forms */}
-        <div className="flex-1 lg:w-1/2 xl:w-2/5 flex flex-col justify-center p-8">
-          <div className="w-full max-w-md mx-auto">
-            {/* Mobile Logo */}
-            <div className="lg:hidden flex items-center justify-center space-x-3 mb-8">
-              <div className="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-white" />
+        {/* Right Side - Content */}
+        <div className={`flex-1 ${isLandingPage ? 'w-full' : 'lg:w-1/2 xl:w-2/5'} flex flex-col justify-center ${isLandingPage ? 'p-8 lg:p-16' : 'p-8'}`}>
+          <div className={`w-full ${isLandingPage ? 'max-w-6xl' : 'max-w-md'} mx-auto`}>
+            {/* Mobile Logo - Only show for auth pages */}
+            {!isLandingPage && (
+              <div className="lg:hidden flex items-center justify-center space-x-3 mb-8">
+                <div className="w-10 h-10 bg-brand-primary rounded-lg flex items-center justify-center">
+                  <MessageSquare className="w-6 h-6 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold gradient-text">AssisText</h1>
               </div>
-              <h1 className="text-2xl font-bold gradient-text">AssisText</h1>
-            </div>
+            )}
 
-            {/* Auth Content */}
-            <div className="surface-card rounded-2xl shadow-xl border border-brand p-8">
+            {/* Content */}
+            {isLandingPage ? (
               <Outlet />
-            </div>
-            
-            {/* Footer Links */}
-            <div className="mt-8 text-center">
-              <div className="flex items-center justify-center space-x-6 text-sm text-muted">
-                <a href="/privacy" className="hover:text-brand-primary transition-colors">
-                  Privacy Policy
-                </a>
-                <a href="/terms" className="hover:text-brand-primary transition-colors">
-                  Terms of Service
-                </a>
-                <a href="/support" className="hover:text-brand-primary transition-colors">
-                  Support
-                </a>
+            ) : (
+              <div className="surface-card rounded-2xl shadow-xl border border-brand p-8">
+                <Outlet />
               </div>
-            </div>
+            )}
+            
+            {/* Footer Links - Only show for auth pages */}
+            {!isLandingPage && (
+              <div className="mt-8 text-center">
+                <div className="flex items-center justify-center space-x-6 text-sm text-muted">
+                  <a href="/privacy" className="hover:text-brand-primary transition-colors">
+                    Privacy Policy
+                  </a>
+                  <a href="/terms" className="hover:text-brand-primary transition-colors">
+                    Terms of Service
+                  </a>
+                  <a href="/support" className="hover:text-brand-primary transition-colors">
+                    Support
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Footer - Only show on landing page */}
+      {isLandingPage && (
+        <footer className="bg-slate-900 text-white py-16">
+          <div className="container mx-auto px-6">
+            <div className="grid md:grid-cols-4 gap-8 mb-8">
+              {/* Company */}
+              <div>
+                <div className="flex items-center space-x-2 mb-4">
+                  <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-xl font-bold">AssisText</span>
+                </div>
+                <p className="text-slate-400 mb-4">
+                  AI-powered SMS management built in Canada with privacy and security in mind.
+                </p>
+                <div className="flex space-x-4">
+                  <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors">
+                    📧
+                  </a>
+                  <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors">
+                    🐦
+                  </a>
+                  <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors">
+                    💼
+                  </a>
+                </div>
+              </div>
+
+              {/* Product */}
+              <div>
+                <h4 className="font-semibold mb-4">Product</h4>
+                <ul className="space-y-2 text-slate-400">
+                  <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                  <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+                </ul>
+              </div>
+
+              {/* Support */}
+              <div>
+                <h4 className="font-semibold mb-4">Support</h4>
+                <ul className="space-y-2 text-slate-400">
+                  <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+                </ul>
+              </div>
+
+              {/* Legal */}
+              <div>
+                <h4 className="font-semibold mb-4">Legal</h4>
+                <ul className="space-y-2 text-slate-400">
+                  <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                  <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">PIPEDA Compliance</a></li>
+                  <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
+              <p>&copy; 2025 AssisText. All rights reserved. Made in Canada 🇨🇦</p>
+            </div>
+          </div>
+        </footer>
+      )}
     </div>
   );
 };
