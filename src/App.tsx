@@ -20,6 +20,7 @@ import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 
 // Layout
+import AuthLayout from './components/Layout/AuthLayout';
 import AppLayout from './components/Layout/AppLayout';
 
 function App() {
