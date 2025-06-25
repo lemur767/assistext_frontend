@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { BusinessHours } from '../../types';
 import { toast } from 'react-toastify';
-import { setBusinessHours } from '../../api/profiles';
+import { ProfileService } from '../services/profileService';
 
 interface BusinessHoursSettingsProps {
   profileId: number;
