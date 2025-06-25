@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { AuthService} from '../services/authService';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthService} from '../../services/authService';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface PasswordFormProps {
   onSuccess?: () => void;
