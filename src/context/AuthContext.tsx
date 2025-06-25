@@ -1,8 +1,9 @@
+// src/context/AuthContext.tsx - Updated to use apiClient service pattern
+
 import React, { createContext, useReducer, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import axios from '../api';
+import apiClient from '../services/apiClient';
 import type { User, LoginCredentials, RegisterData } from '../types';
-import axiosBase from '../api/index';
 
 // Define the AuthState type
 export interface AuthState {
@@ -21,6 +22,7 @@ export interface AuthContextType extends AuthState {
   logout: () => void;
   clearError: () => void;
   updateUser: (userData: Partial<User>) => void;
+  refreshToken: () => Promise<void>;
 }
 
 // Define action types
@@ -31,13 +33,14 @@ type AuthAction =
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_ERROR' }
   | { type: 'UPDATE_USER'; payload: User }
-  | { type: 'REFRESH_TOKEN'; payload: { token: string; refreshToken: string } };
+  | { type: 'REFRESH_TOKEN'; payload: { token: string; refreshToken: string } }
+  | { type: 'SET_LOADING'; payload: boolean };
 
 // Initial state
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
-  refreshToken: localStorage.getItem('refreshToken'),
+  token: localStorage.getItem('auth_token'),
+  refreshToken: localStorage.getItem('refresh_token'),
   isAuthenticated: false,
   isLoading: true,
   error: null,
@@ -53,8 +56,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         error: null,
       };
     case 'AUTH_SUCCESS':
-      localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('refreshToken', action.payload.refreshToken);
+      localStorage.setItem('auth_token', action.payload.token);
+      localStorage.setItem('refresh_token', action.payload.refreshToken);
+      // Update apiClient token
+      apiClient.setToken(action.payload.token);
       return {
         ...state,
         user: action.payload.user,
@@ -65,8 +70,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         error: null,
       };
     case 'AUTH_FAIL':
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      // Remove token from apiClient
+      apiClient.removeToken();
       return {
         ...state,
         user: null,
@@ -77,8 +84,10 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         error: action.payload,
       };
     case 'LOGOUT':
-      localStorage.removeItem('token');
-      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('refresh_token');
+      // Remove token from apiClient
+      apiClient.removeToken();
       return {
         ...state,
         user: null,
@@ -99,12 +108,19 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         user: action.payload,
       };
     case 'REFRESH_TOKEN':
-      localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('refreshToken', action.payload.refreshToken);
+      localStorage.setItem('auth_token', action.payload.token);
+      localStorage.setItem('refresh_token', action.payload.refreshToken);
+      // Update apiClient token
+      apiClient.setToken(action.payload.token);
       return {
         ...state,
         token: action.payload.token,
         refreshToken: action.payload.refreshToken,
+      };
+    case 'SET_LOADING':
+      return {
+        ...state,
+        isLoading: action.payload,
       };
     default:
       return state;
@@ -119,44 +135,77 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   clearError: () => {},
   updateUser: () => {},
+  refreshToken: async () => {},
 });
 
 // Provider component
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set up axios authentication header
+  // Initialize apiClient with stored token
   useEffect(() => {
-    if (state.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
+    const storedToken = localStorage.getItem('auth_token');
+    if (storedToken) {
+      apiClient.setToken(storedToken);
     }
-  }, [state.token]);
+  }, []);
 
   // Auto-refresh token function
-  const refreshToken = useCallback(async () => {
-    if (!state.refreshToken) return;
+  const refreshTokenFunc = useCallback(async () => {
+    if (!state.refreshToken) {
+      dispatch({ type: 'LOGOUT' });
+      return;
+    }
 
     try {
-      const res = await axios.post('/api/auth/refresh-token', { refreshToken: state.refreshToken });
+      const response = await apiClient.post<{
+        access_token: string;
+        refresh_token?: string;
+      }>('/api/auth/refresh-token', {
+        refresh_token: state.refreshToken
+      });
+
       dispatch({
         type: 'REFRESH_TOKEN',
         payload: {
-          token: res.data.access_token,
-          refreshToken: res.data.refresh_token || state.refreshToken,
+          token: response.access_token,
+          refreshToken: response.refresh_token || state.refreshToken,
         },
       });
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Token refresh failed:', err);
       dispatch({ type: 'LOGOUT' });
     }
   }, [state.refreshToken]);
+
+  // Load user data
+  const loadUser = useCallback(async () => {
+    if (!state.token) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return;
+    }
+
+    try {
+      const user = await apiClient.get<User>('/api/auth/me');
+      dispatch({ 
+        type: 'UPDATE_USER', 
+        payload: user 
+      });
+      dispatch({ 
+        type: 'SET_LOADING', 
+        payload: false 
+      });
+    } catch (err: any) {
+      console.error('Failed to load user:', err);
+      dispatch({ type: 'LOGOUT' });
+    }
+  }, [state.token]);
 
   // Check token expiration and set up token refresh
   useEffect(() => {
     const checkTokenExpiration = async () => {
       if (!state.token) {
-        dispatch({ type: 'LOGOUT' });
+        dispatch({ type: 'SET_LOADING', payload: false });
         return;
       }
 
@@ -167,58 +216,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // If token is expired
         if (decoded.exp < currentTime) {
-          await refreshToken();
+          console.log('Token expired, attempting refresh...');
+          await refreshTokenFunc();
         }
         // If token is valid but will expire soon (less than 15 minutes)
         else if (decoded.exp < currentTime + 15 * 60) {
-          await refreshToken();
+          console.log('Token expiring soon, refreshing...');
+          await refreshTokenFunc();
         }
         // If token is valid, load user data
         else {
-          loadUser();
+          await loadUser();
         }
       } catch (err) {
+        console.error('Token validation failed:', err);
         dispatch({ type: 'LOGOUT' });
       }
     };
 
-    checkTokenExpiration();
+    if (state.isLoading) {
+      checkTokenExpiration();
+    }
+  }, [state.token, state.isLoading, refreshTokenFunc, loadUser]);
 
-    // Set up token refresh interval (every 15 minutes)
-    const refreshInterval = setInterval(refreshToken, 15 * 60 * 1000);
+  // Set up periodic token refresh (every 14 minutes)
+  useEffect(() => {
+    if (!state.isAuthenticated || !state.token) return;
+
+    const refreshInterval = setInterval(() => {
+      refreshTokenFunc();
+    }, 14 * 60 * 1000); // 14 minutes
 
     return () => clearInterval(refreshInterval);
-  }, [state.token, refreshToken]);
-
-  // Load user data
-  const loadUser = useCallback(async () => {
-    if (!state.token) return;
-
-    try {
-      const res = await axios.get('/api/auth/me');
-      dispatch({ type: 'UPDATE_USER', payload: res.data });
-    } catch (err) {
-      dispatch({ type: 'LOGOUT' });
-    }
-  }, [state.token]);
+  }, [state.isAuthenticated, state.token, refreshTokenFunc]);
 
   // Login user
   const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'AUTH_START' });
 
     try {
-      const res = await axios.post(`${axiosBase}/api/auth/login`, credentials);
+      const response = await apiClient.post<{
+        user: User;
+        access_token: string;
+        refresh_token: string;
+      }>('/api/auth/login', credentials);
       
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
-          user: res.data.user,
-          token: res.data.access_token,
-          refreshToken: res.data.refresh_token,
+          user: response.user,
+          token: response.access_token,
+          refreshToken: response.refresh_token,
         },
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Authentication failed';
+      const errorMessage = err.message || 'Authentication failed';
       dispatch({ type: 'AUTH_FAIL', payload: errorMessage });
       throw new Error(errorMessage);
     }
@@ -229,27 +281,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'AUTH_START' });
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', data);
+      const response = await apiClient.post<{
+        user: User;
+        access_token: string;
+        refresh_token: string;
+      }>('/api/auth/register', data);
       
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
-          user: res.data.user,
-          token: res.data.access_token,
-          refreshToken: res.data.refresh_token,
+          user: response.user,
+          token: response.access_token,
+          refreshToken: response.refresh_token,
         },
       });
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Registration failed';
+      const errorMessage = err.message || 'Registration failed';
       dispatch({ type: 'AUTH_FAIL', payload: errorMessage });
       throw new Error(errorMessage);
     }
   };
 
   // Logout user
-  const logout = () => {
+  const logout = useCallback(() => {
+    // Optional: Call logout endpoint to invalidate tokens on server
+    if (state.token) {
+      apiClient.post('/api/auth/logout').catch(() => {
+        // Ignore logout endpoint errors
+        console.log('Logout endpoint not available or failed');
+      });
+    }
+    
     dispatch({ type: 'LOGOUT' });
-  };
+  }, [state.token]);
 
   // Clear error
   const clearError = () => {
@@ -280,6 +344,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         clearError,
         updateUser,
+        refreshToken: refreshTokenFunc,
       }}
     >
       {children}

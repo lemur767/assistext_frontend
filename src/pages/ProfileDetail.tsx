@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getProfile, updateProfile, toggleAI } from '../api/profiles';
-import { getConversations } from '../api/messages';
+import { useAuth } from '../context/AuthContext';
+import { getConversations } from '../services/messageService';
 import { useUI } from '../hooks/useUI';
+import {toggleAI} from '../services/aiSettingService'
 import type { Profile, ConversationSummary } from '../types';
 import ConversationList from '../components/messaging/ConversationList';
 //import BusinessHoursSettings from '../components/profile/BusinessHoursSettings';
@@ -22,7 +23,7 @@ const ProfileDetail = () => {
   
   // Validate param
   if (!profileId) {
-    navigate('/dashboard');
+    navigate('/app/dashboard');
     return null;
   }
   
@@ -33,12 +34,12 @@ const ProfileDetail = () => {
         setIsLoading(true);
         
         // Fetch profile
-        const profileData = await getProfile(parseInt(profileId));
+        const profileData = await AuthService.getProfile(parseInt(profileId));
         setProfile(profileData);
         setCurrentProfile(profileData.id);
         
         // Fetch conversations
-        const conversationsData = await getConversations(parseInt(profileId));
+        const conversationsData = await MessageService.getConversations(parseInt(profileId));
         setConversations(conversationsData);
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -56,7 +57,7 @@ const ProfileDetail = () => {
     if (!profile) return;
     
     try {
-      await toggleAI(profile.id, !profile.ai_enabled);
+      await AISettingService.toggleAI(profile.id, !profile.ai_enabled);
       
       // Update local state
       setProfile(prev => prev ? { ...prev, ai_enabled: !prev.ai_enabled } : null);
@@ -73,7 +74,7 @@ const ProfileDetail = () => {
     if (!profile) return;
     
     try {
-      const updatedProfile = await updateProfile(profile.id, data);
+      const updatedProfile = await AuthService.updateUser(profile.id, data);
       setProfile(updatedProfile);
       toast.success('Profile updated successfully');
     } catch (error) {

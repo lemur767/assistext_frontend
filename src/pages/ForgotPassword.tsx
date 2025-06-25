@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowRight, ArrowLeft, CheckCircle, Loader } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import {forgotPassword} from '../context/AuthContext'
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,13 +26,14 @@ const ForgotPassword: React.FC = () => {
 
     setIsSubmitting(true);
     setError('');
+    setEmail(email)
     
     try {
       // Make API call to send reset email
-      const response = await fetch('/api/auth/forgot-password', {
+      const response = await AuthService.forgotPassword(email), email:string ({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({email})
       });
       
       if (response.ok) {

@@ -1,6 +1,6 @@
 // src/services/aiSettingsService.ts
 import type { AISettings, TextExample, ApiResponse } from '../types';
-import { apiClient } from './apiClient';
+import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../utils/constants';
 
 export const aiSettingsService = {

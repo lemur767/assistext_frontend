@@ -1,6 +1,6 @@
 // src/services/phoneSearchService.ts - Updated for live SignalWire integration
 
-import {apiClient} from './apiClient';
+import apiClient from './apiClient';
 
 export interface PhoneSearchFilters {
   city?: string;

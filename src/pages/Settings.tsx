@@ -1,8 +1,8 @@
 // src/pages/Settings.tsx - Fixed with proper TypeScript types
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { getCurrentUser, updateUserProfile } from '../api/auth';
-import { useAuth } from '../hooks/useAuth';
+import { AuthService } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 import type { User } from '../types';
 
 // Import components
@@ -69,7 +69,7 @@ const Settings: React.FC = () => {
     const fetchUserData = async (): Promise<void> => {
       try {
         setIsLoading(true);
-        const userData = await getCurrentUser();
+        const userData = await AuthService.getCurrentUser();
         setUser(userData);
       } catch (error) {
         console.error('Error fetching user data:', error);

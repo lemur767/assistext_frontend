@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, Loader } from 'lucide-react';
-import { loginUser } from '../api/auth';
+import { AuthService } from '../@services/authService'
 import type { LoginCredentials } from '../types/auth';
+import { useAuth } from '../context/AuthContext'
 
 interface LoginFormData {
   username: string;
@@ -76,7 +77,7 @@ const Login: React.FC = () => {
       
       console.log('Attempting login to:', import.meta.env.VITE_API_URL || 'https://backend.assitext.ca');
       
-      const response = await loginUser(credentials);
+      const response = await login.AuthService(credentials);
       
       console.log('Login response:', response);
       
@@ -97,7 +98,7 @@ const Login: React.FC = () => {
         
         // Success! Navigate to dashboard
         console.log('Login successful, redirecting to dashboard...');
-        window.location.href = '/dashboard';
+        window.location.href = '/app/dashboard';
         
       } else {
         setError('Login response missing authentication token');

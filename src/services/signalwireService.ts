@@ -1,5 +1,5 @@
 // src/services/signalwireService.ts - Fixed to use your existing apiClient
-import {apiClient} from './apiClient.ts';
+import apiClient from './apiClient.ts';
 
 
 export interface SMSMessage {
