@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
-import { updateUserProfile } from '../../api/auth';
+import { ProfileService } from '../../services/profileService';
 import type { User } from '../../types';
 
 interface ProfileFormData {

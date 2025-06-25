@@ -1,7 +1,7 @@
 // ProfileCreationForm.jsx
 import React, { useState, useEffect } from 'react';
 import { Form, Button, Card, Alert, Tabs, Tab } from 'react-bootstrap';
-import axios from 'axios';
+import apiClient from '../../services/apiClient'
 
 const ProfileCreationForm = () => {
   const [profile, setProfile] = useState({
