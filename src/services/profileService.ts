@@ -2,7 +2,7 @@ import type { Profile, CreateProfileForm, ApiResponse } from '../types';
 import  apiClient from './apiClient';
 import { API_ENDPOINTS } from '../utils/constants';
 
-export const profileService = {
+export const ProfileService = {
   async getProfiles(): Promise<Profile[]> {
     const response = await apiClient.get<ApiResponse<Profile[]>>(API_ENDPOINTS.profiles.list);
     return response.data;

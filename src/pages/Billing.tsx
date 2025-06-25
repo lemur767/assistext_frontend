@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { 
-  getSubscriptionPlans, 
-  getCurrentSubscription, 
-  getInvoices, 
-  getUsageSummary,
-  createCheckoutSession,
-  cancelSubscription
-} from '../api/billing';
+import { BillingService } from '../services/billingService';
 import type { SubscriptionPlan, Subscription, Invoice, UsageSummary } from '../types';
 
 const Billing = () => {

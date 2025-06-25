@@ -1,7 +1,8 @@
 // src/pages/ClientManagement.tsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { apiClients } from '../api/clients.ts';
+import apiClients from './apiClient'; 
+import {ClientService } from '../services/clientService';
 import { Search, Filter, MoreVertical, Phone, Mail, Tag, Flag, Archive } from 'lucide-react';
 
 interface Client {
@@ -37,7 +38,7 @@ const ClientManagement: React.FC = () => {
         search: searchQuery,
         status: filterStatus !== 'all' ? filterStatus : undefined,
       };
-      const data = await clientsAPI.getClients(selectedProfile, 1, 50, filters);
+      const data = await ClientService.getClients(selectedProfile, 1, 50, filters);
       setClients(data.clients || []);
     } catch (error) {
       console.error('Error loading clients:', error);
@@ -48,7 +49,7 @@ const ClientManagement: React.FC = () => {
 
   const handleToggleBlock = async (clientId: string, isBlocked: boolean) => {
     try {
-      await clientsAPI.toggleBlockClient(clientId, !isBlocked);
+      await ClientService.toggleBlockClient(clientId, !isBlocked);
       setClients(prev => 
         prev.map(client => 
           client.id === clientId 
@@ -63,7 +64,7 @@ const ClientManagement: React.FC = () => {
 
   const handleToggleFlag = async (clientId: string, isFlagged: boolean) => {
     try {
-      await clientsAPI.toggleFlagClient(clientId, !isFlagged);
+      await ClientService.toggleFlagClient(clientId, !isFlagged);
       setClients(prev => 
         prev.map(client => 
           client.id === clientId 

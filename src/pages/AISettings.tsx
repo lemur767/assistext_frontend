@@ -1,7 +1,7 @@
 // src/pages/AISettings.tsx - Complete implementation
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { profilesAPI } from '../api/profiles';
+import { ProfileService } from '../services/profileService';s
 import { Zap, Save, RotateCcw, Settings, Brain, MessageSquare } from 'lucide-react';
 
 const AISettings: React.FC = () => {
@@ -39,7 +39,7 @@ const AISettings: React.FC = () => {
   const loadProfiles = async () => {
     try {
       setIsLoading(true);
-      const data = await profilesAPI.getProfiles();
+      const data = await ProfileService.getProfiles();
       setProfiles(data.profiles || []);
       if (data.profiles && data.profiles.length > 0) {
         setSelectedProfile(data.profiles[0]);
@@ -56,7 +56,7 @@ const AISettings: React.FC = () => {
 
     try {
       setIsSaving(true);
-      await profilesAPI.updateAISettings(selectedProfile.id, {
+      await ProfileService.updateAISettings(selectedProfile.id, {
         ai_enabled: settings.ai_enabled,
         ai_instructions: settings.ai_instructions,
         daily_auto_response_limit: settings.daily_auto_response_limit,

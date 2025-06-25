@@ -1,7 +1,7 @@
 // src/pages/Analytics.tsx - Complete implementation
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { analyticsAPI } from '../api/analytics';
+import { AnalyticService } from '../services/analyticService'
 import { BarChart3, TrendingUp, Users, Zap, MessageSquare, Clock } from 'lucide-react';
 import type { DashboardData } from '../types';
 
@@ -19,7 +19,7 @@ const Analytics: React.FC = () => {
   const loadAnalytics = async () => {
     try {
       setIsLoading(true);
-      const data = await analyticsAPI.getDashboardData(selectedProfile || undefined, timeRange);
+      const data = await AnalyticService.getDashboardData(selectedProfile || undefined, timeRange);
       setAnalyticsData(data);
     } catch (error) {
       console.error('Error loading analytics:', error);

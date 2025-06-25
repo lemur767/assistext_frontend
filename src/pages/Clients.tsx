@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getAllClients, searchClients, toggleClientBlock, markClientAsRegular } from '../api/clients';
-import { getProfiles } from '../api/profiles';
+import { clientService } from '../services/clientService';
+import { ProfileService} from '../service/profileService';
 import type { Client, Profile } from '../types';
 
 const Clients = () => {
@@ -24,11 +24,11 @@ const Clients = () => {
         setIsLoading(true);
         
         // Fetch clients
-        const clientsData = await getAllClients();
+        const clientsData = await ClientService.getAllClients();
         setClients(clientsData);
         
         // Fetch profiles
-        const profilesData = await getProfiles();
+        const profilesData = await ProfileService.getProfiles();
         setProfiles(profilesData);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -46,7 +46,7 @@ const Clients = () => {
     if (!searchQuery.trim()) {
       // If search query is empty, fetch all clients
       try {
-        const clientsData = await getAllClients();
+        const clientsData = await ClientService.getAllClients();
         setClients(clientsData);
       } catch (error) {
         console.error('Error fetching clients:', error);
@@ -57,7 +57,7 @@ const Clients = () => {
     
     try {
       setIsLoading(true);
-      const results = await searchClients(searchQuery);
+      const results = await ClientService.searchClients(searchQuery);
       setClients(results);
     } catch (error) {
       console.error('Error searching clients:', error);
@@ -81,15 +81,15 @@ const Clients = () => {
       
       switch (type) {
         case 'blocked':
-          clientsData = await getAllClients(); // Replace with getBlockedClients() when available
+          clientsData = await ClientService.getAllClients(); // Replace with getBlockedClients() when available
           clientsData = clientsData.filter(client => client.isBlocked);
           break;
         case 'regular':
-          clientsData = await getAllClients(); // Replace with getRegularClients() when available
+          clientsData = await ClientService.getAllClients(); // Replace with getRegularClients() when available
           clientsData = clientsData.filter(client => client.isRegular);
           break;
         default:
-          clientsData = await getAllClients();
+          clientsData = await ClientService.getAllClients();
       }
       
       setClients(clientsData);
@@ -114,7 +114,7 @@ const Clients = () => {
     
     setIsSubmitting(true);
     try {
-      await toggleClientBlock(
+      await ClientService.toggleClientBlock(
         selectedClient.phoneNumber, 
         !selectedClient.isBlocked,
         !selectedClient.isBlocked ? blockReason : undefined
@@ -144,7 +144,7 @@ const Clients = () => {
   // Handle mark as regular/not regular
   const handleToggleRegular = async (client: Client) => {
     try {
-      await markClientAsRegular(client.phoneNumber, !client.isRegular);
+      await ClientService.markClientAsRegular(client.phoneNumber, !client.isRegular);
       
       // Update client in state
       setClients(clients.map(c => 
