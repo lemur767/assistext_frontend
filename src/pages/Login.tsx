@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle, Loader } from 'lucide-react';
-import { AuthService } from '../@services/authService'
+import { AuthService } from '../services/authService'
 import type { LoginCredentials } from '../types/auth';
 import { useAuth } from '../context/AuthContext'
 
