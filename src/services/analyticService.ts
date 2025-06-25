@@ -2,7 +2,7 @@ import type { DashboardData, ApiResponse } from '../types';
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../utils/constants';
 
-export const AnalyticsService = {
+const AnalyticsService = {
   async getDashboardData(profileId: string, timeRange: string): Promise<DashboardData> {
     const response = await apiClient.get<ApiResponse<DashboardData>>(
       `${API_ENDPOINTS.analytics.dashboard(profileId)}?timeRange=${timeRange}`
@@ -10,3 +10,5 @@ export const AnalyticsService = {
     return response.data;
   },
 };
+
+export default AnalyticsService
