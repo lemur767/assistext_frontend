@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { clientService } from '../services/clientService';
+import { ClientService } from '../services/clientService';
 import { ProfileService} from '../service/profileService';
 import type { Client, Profile } from '../types';
 
