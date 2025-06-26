@@ -1,23 +1,21 @@
-
 module.exports = {
   apps: [{
     name: 'assistext_frontend',
     script: 'server.js',
-    instances: 2, // Run 2 instances for load balancing
-    exec_mode: 'cluster',
     cwd: '/opt/assistext_frontend',
+    instances: 'max',
+    exec_mode: 'cluster',
     env: {
       NODE_ENV: 'production',
       PORT: 3000
     },
-    error_file: '/opt/assistext_frontend/logs/err.log',
-    out_file: '/opt/assistext_frontend/logs/out.log',
-    log_file: '/opt/assistext_frontend/logs/combined.log',
+    log_file: '/var/log/assistext/frontend-combined.log',
+    out_file: '/var/log/assistext/frontend-out.log',
+    error_file: '/var/log/assistext/frontend-error.log',
     time: true,
-    max_memory_restart: '1G',
-    watch: false,
     autorestart: true,
-    max_restarts: 10,
-    min_uptime: '10s'
+    max_restarts: 5,
+    restart_delay: 1000,
+    max_memory_restart: '500M'
   }]
 };
