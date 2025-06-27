@@ -53,9 +53,7 @@ export const Modal: React.FC<ModalProps> = ({
       document.body.style.overflow = 'hidden';
       
       // Focus trap
-      const cleanup = modalRef.current ? 
-        accessibilityUtils.trapFocus(modalRef.current) : 
-        undefined;
+      const cleanup = modalRef.current ? accessibilityUtils.trapFocus(modalRef.current) : undefined;
 
       return () => {
         cleanup?.();
