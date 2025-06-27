@@ -1,7 +1,7 @@
 // src/pages/Analytics.tsx - Complete implementation with FIXED ternary operator
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { AnalyticService } from '../services/analyticService'
+import AnalyticService from '../services/analyticService'
 import { BarChart3, TrendingUp, Users, Zap, MessageSquare, Clock } from 'lucide-react';
 import type { DashboardData } from '../types';
 
