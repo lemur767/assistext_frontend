@@ -26,12 +26,10 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        
         <Routes>
-          
-              <Route path="/" element={<PublicRouteWrapper><LandingPage/></PublicRouteWrapper>} />
-              <Route path="login" element={<Login />} />
-              <Route path="register" element={<Register />} />
+          <Route path="/" element={<PublicRouteWrapper><LandingPage/></PublicRouteWrapper>} />
+          <Route path="login" element={<PublicRouteWrapper><Login/></PublicRouteWrapper>} />
+          <Route path="register" element={<PublicRouteWrapper><Register/></PublicRouteWrapper>} />
          
         
         
