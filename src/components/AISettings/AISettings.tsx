@@ -625,11 +625,7 @@ const TrainingDataSettings: React.FC<TrainingDataSettingsProps> = ({ settings, p
               <label className="form-label">Conversation History</label>
               <textarea
                 className="form-input h-40 resize-none font-mono text-sm"
-                placeholder={`Paste your conversation history here. Format:
-Client: Hey, are you available?
-You: Hi! Let me check my schedule
-Client: Looking for tonight around 8pm
-You: I can do 8:30pm, would that work?`}
+                placeholder={`Paste your conversation history here.`}
                 value={importText}
                 onChange={(e) => setImportText(e.target.value)}
               />

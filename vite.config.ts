@@ -11,7 +11,7 @@ export default defineConfig(({ command, mode }) => {
     build: {
       outDir: 'dist',
       sourcemap: false,
-      minify: 'esbuild',
+      minify: disable,
       rollupOptions: {
         output: {
           manualChunks: {

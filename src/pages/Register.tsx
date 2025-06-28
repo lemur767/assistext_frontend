@@ -4,10 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
-import RegistrationService, { 
-  RegistrationPhoneNumber, 
-  CompleteSignupData 
-} from '../services/registrationService';
+import RegistrationService from '../services/registrationService';
 
 interface FormData {
   username: string;
@@ -263,7 +260,7 @@ const Register: React.FC = () => {
                 key={step}
                 className={`w-3 h-3 rounded-full ${
                   step <= currentStep
-                    ? 'bg-blue-600'
+ ? 'bg-blue-600' : 'bg-gray-300'                    ? 'bg-blue-600'
                     : 'bg-gray-300'
                 }`}
               />

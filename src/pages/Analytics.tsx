@@ -1,7 +1,7 @@
-// src/pages/Analytics.tsx - Complete implementation
+// src/pages/Analytics.tsx - Complete implementation with FIXED ternary operator
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { AnalyticService } from '../services/analyticService'
+import AnalyticService from '../services/analyticService'
 import { BarChart3, TrendingUp, Users, Zap, MessageSquare, Clock } from 'lucide-react';
 import type { DashboardData } from '../types';
 
@@ -79,7 +79,7 @@ const Analytics: React.FC = () => {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className="rounded-lg border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
             >
               <option value="7d">Last 7 days</option>
               <option value="30d">Last 30 days</option>

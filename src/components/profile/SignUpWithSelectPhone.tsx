@@ -137,7 +137,7 @@ const SignUpWithSelectPhone: React.FC<SignUpWithSelectPhoneProps> = ({
               <div key={step.number} className="flex items-center">
                 <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
                   currentStep >= step.number 
-                    ? 'bg-white text-purple-900 border-white' 
+ ? 'bg-white text-purple-900 border-white' : 'border-white/30 text-white/60'                    ? 'bg-white text-purple-900 border-white' 
                     : 'border-white/30 text-white/60'
                 }`}>
                   {currentStep > step.number ? <Check className="w-5 h-5" /> : step.number}
