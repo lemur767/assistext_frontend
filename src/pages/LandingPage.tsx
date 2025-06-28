@@ -59,9 +59,9 @@ const LandingPage: React.FC = () => {
 
             {/* Hero Title */}
             <h1 className="text-hero mb-8 animate-slide-up">
-              <span className="text-slate-900">AI-Powered</span>
+              <span className="text-slate-900 text-lg sm:text-md">AI-Powered</span>
               <br />
-              <span className="text-gradient">SMS Assistant</span>
+              <span className="text-gradient text-xxl">SMS Assistant</span>
             </h1>
 
             {/* Hero Subtitle */}
@@ -126,7 +126,7 @@ const LandingPage: React.FC = () => {
       <section id="features" className="section bg-white">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold py-10 text-slate-900 mb-4">
               Everything you need to automate SMS
             </h2>
             <p className="text-subtitle max-w-2xl mx-auto">
@@ -219,7 +219,7 @@ const LandingPage: React.FC = () => {
       {/* Pricing Section */}
       <section id="pricing" className="section bg-gradient-to-br from-slate-50 to-blue-50">
         <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
+          <div className="text-center mt-9 mb-6">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
               Simple, transparent pricing
             </h2>
@@ -231,7 +231,7 @@ const LandingPage: React.FC = () => {
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Free Plan */}
-              <div className="card">
+              <div className="card mb-16">
                 <div className="card-body">
                   <div className="text-center mb-8">
                     <h3 className="text-2xl font-bold text-slate-900 mb-2">Free Trial</h3>
@@ -265,7 +265,7 @@ const LandingPage: React.FC = () => {
               </div>
 
               {/* Pro Plan */}
-              <div className="card relative border-primary-200 shadow-glow">
+              <div className="card relative border-primary-200 mb-16 shadow-glow">
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <span className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-1 rounded-full text-sm font-medium">
                     Most Popular

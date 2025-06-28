@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { AuthContext } from '../context/AuthContext';
-import RegistrationService from '../services/registrationService';
+import { AuthContext, useAuth } from '../context/AuthContext';
+import RegistrationService, { type RegistrationPhoneNumber } from '../services/registrationService';
 
 interface FormData {
   username: string;
@@ -20,7 +20,7 @@ interface FormData {
 }
 
 const Register: React.FC = () => {
-  const { isAuthenticated } = AuthContext;
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   // Multi-step form state
@@ -121,61 +121,81 @@ const Register: React.FC = () => {
 
   // Step validation
   const validateStep = (step: number): boolean => {
-    switch (step) {
-      case 1:
-        const passwordValid = RegistrationService.validatePassword(formData.password);
-        const passwordsMatch = RegistrationService.validatePasswordMatch(formData.password, formData.confirmPassword);
-        const emailValid = RegistrationService.validateEmailFormat(formData.email);
-        
-        return !!(
-          formData.username &&
-          formData.email &&
-          formData.password &&
-          formData.confirmPassword &&
-          formData.firstName &&
-          formData.lastName &&
-          passwordValid.isValid &&
-          passwordsMatch &&
-          emailValid
-        );
-      case 2:
-        return !!(formData.profileName && formData.preferredCity);
-      case 3:
-        return !!selectedNumber;
-      default:
-        return false;
-    }
-  };
-
-  // Navigation functions
+  switch (step) {
+    case 1:
+      const passwordValid = RegistrationService.validatePassword(formData.password);
+      const passwordsMatch = RegistrationService.validatePasswordMatch(formData.password, formData.confirmPassword);
+      const emailValid = RegistrationService.validateEmailFormat(formData.email);
+      
+      // FIXED: Removed the ! and used !! for proper boolean conversion
+      return !!(
+        formData.username &&
+        formData.email &&
+        formData.password &&
+        formData.confirmPassword &&
+        formData.firstName &&
+        formData.lastName &&
+        passwordValid.isValid &&
+        passwordsMatch &&
+        emailValid
+      );
+    
+    case 2:
+      return !!(formData.profileName && formData.preferredCity);
+    
+    case 3:
+      return !!selectedNumber;
+    
+    default:
+      return false;
+  }
+};
   const handleNextStep = (): void => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => prev + 1);
-      setError('');
-    } else {
-      switch (currentStep) {
-        case 1:
-          if (!RegistrationService.validatePassword(formData.password).isValid) {
-            setError('Password must be at least 8 characters with uppercase, lowercase, and number');
-          } else if (!RegistrationService.validatePasswordMatch(formData.password, formData.confirmPassword)) {
-            setError('Passwords do not match');
-          } else if (!RegistrationService.validateEmailFormat(formData.email)) {
-            setError('Please enter a valid email address');
-          } else {
-            setError('Please fill in all required fields correctly');
-          }
-          break;
-        case 2:
-          setError('Please fill in profile name and select a city');
-          break;
-        case 3:
-          setError('Please select a phone number');
-          break;
-        default:
-          setError('Please complete all required fields');
+  if (validateStep(currentStep)) {
+    setCurrentStep(prev => prev + 1);
+    setError('');
+    return; // Exit early on success
+  }
+
+  // Only run error logic if validation fails
+  switch (currentStep) {
+    case 1:
+      // Check validation conditions individually for specific error messages
+      const passwordValidation = RegistrationService.validatePassword(formData.password);
+      const passwordsMatch = RegistrationService.validatePasswordMatch(formData.password, formData.confirmPassword);
+      const emailValid = RegistrationService.validateEmailFormat(formData.email);
+      
+      // Priority order for error messages
+      if (!formData.username || !formData.email || !formData.firstName || !formData.lastName) {
+        setError('Please fill in all required fields');
+      } else if (!emailValid) {
+        setError('Please enter a valid email address');
+      } else if (!formData.password || !formData.confirmPassword) {
+        setError('Please enter and confirm your password');
+      } else if (!passwordValidation.isValid) {
+        setError('Password must be at least 8 characters with uppercase, lowercase, and number');
+      } else if (!passwordsMatch) {
+        setError('Passwords do not match');
+      } else {
+        setError('Please complete all required fields correctly');
       }
-    }
-  };
+      break;
+    case 2:
+      if (!formData.profileName) {
+        setError('Please enter a profile name');
+      } else if (!formData.preferredCity) {
+        setError('Please select a city');
+      } else {
+        setError('Please complete your profile information');
+      }
+      break;
+    case 3:
+      setError('Please select a phone number');
+      break;
+    default:
+      setError('Please complete all required fields');
+  }
+};
 
   const handlePrevStep = (): void => {
     setCurrentStep(prev => prev - 1);
@@ -187,59 +207,86 @@ const Register: React.FC = () => {
    * This will purchase the selected SignalWire number and create the account
    */
   const handleCompleteSignup = async (): Promise<void> => {
-    if (!selectedNumber) {
-      setError('Please select a phone number.');
-      return;
-    }
+  // Validate phone number selection
+  if (!selectedNumber) {
+    setError('Please select a phone number.');
+    return;
+  }
 
-    setLoading(true);
-    setError('');
+  // Validate all form data before submission
+  if (!validateStep(1) || !validateStep(2)) {
+    setError('Please complete all previous steps correctly.');
+    return;
+  }
 
-    try {
-      console.log(`Completing signup for ${formData.username} with number ${selectedNumber.phone_number}`);
-      
-      const signupData: CompleteSignupData = {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        profileName: formData.profileName,
-        profileDescription: formData.profileDescription,
-        personalPhone: formData.personalPhone,
-        selectedPhoneNumber: selectedNumber.phone_number,
-        timezone: 'America/Toronto'
-      };
+  setLoading(true);
+  setError('');
 
-      // Complete signup (backend will purchase the SignalWire number)
-      const result = await RegistrationService.completeSignup(signupData);
+  try {
+    console.log(`Completing signup for ${formData.username} with number ${selectedNumber.phone_number}`);
+    
+    const signupData = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      profileName: formData.profileName,
+      profileDescription: formData.profileDescription,
+      personalPhone: formData.personalPhone,
+      selectedPhoneNumber: selectedNumber.phone_number,
+      timezone: 'America/Toronto'
+    };
 
-      if (result.success) {
-        // Store auth token
+    // Call the registration service
+    const result = await RegistrationService.completeSignup(signupData);
+
+    // FIXED: Better response handling
+    if (result && result.success) {
+      // Store auth tokens
+      if (result.access_token) {
         localStorage.setItem('authToken', result.access_token);
-        localStorage.setItem('refreshToken', result.refresh_token);
-        
-        setSuccess(true);
-        toast.success(`Account created! Welcome ${result.user.first_name}! Phone number ${selectedNumber.formatted_number} is ready for SMS AI.`);
-        
-        // Redirect to dashboard
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 2000);
-        
-      } else {
-        setError(result.error || 'Failed to create account. Please try again.');
-        toast.error(result.error || 'Registration failed');
       }
-    } catch (err) {
-      console.error('Registration error:', err);
-      setError('Error creating account. Please try again.');
-      toast.error('Registration failed');
-    } finally {
-      setLoading(false);
+      if (result.refresh_token) {
+        localStorage.setItem('refreshToken', result.refresh_token);
+      }
+      
+      setSuccess(true);
+      toast.success(`Account created! Welcome ${result.user?.first_name || formData.firstName}!`);
+      
+      // Redirect to dashboard
+      setTimeout(() => {
+        navigate('app/dashboard');
+      }, 2000);
+      
+    } else {
+      // Handle API errors with fallback messages
+      const errorMessage = result?.error || result?.message || 'Failed to create account. Please try again.';
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
-  };
+  } catch (err: any) {
+    console.error('Registration error:', err);
+    
+    // FIXED: Better error extraction from API responses
+    let errorMessage = 'Error creating account. Please try again.';
+    
+    if (err.response?.data?.error) {
+      errorMessage = err.response.data.error;
+    } else if (err.response?.data?.message) {
+      errorMessage = err.response.data.message;
+    } else if (err.message) {
+      errorMessage = err.message;
+    }
+    
+    setError(errorMessage);
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Retry loading numbers if failed
   const handleRetryLoadNumbers = (): void => {
@@ -260,8 +307,7 @@ const Register: React.FC = () => {
                 key={step}
                 className={`w-3 h-3 rounded-full ${
                   step <= currentStep
- ? 'bg-blue-600' : 'bg-gray-300'                    ? 'bg-blue-600'
-                    : 'bg-gray-300'
+                    ? 'bg-blue-600' : 'bg-gray-300'
                 }`}
               />
             ))}
@@ -456,7 +502,8 @@ const Register: React.FC = () => {
               <button
                 onClick={handleNextStep}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                disabled={loading || !validateStep(currentStep)}
+               // disabled={loading || !validateStep(currentStep)}
+                
               >
                 Next
               </button>
