@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'assistext_frontend',
     script: 'server.js',
-    cwd: '/opt/assistext_frontend',
+    cwd: '/opt/assistext_frontend/dist',
     instances: 'max',
     exec_mode: 'cluster',
     env: {
