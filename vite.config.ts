@@ -8,10 +8,10 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [react()],
     
-    build: {
+build: {
       outDir: 'dist',
       sourcemap: false,
-      minify: disable,
+      minify: false,
       rollupOptions: {
         output: {
           manualChunks: {

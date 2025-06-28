@@ -6,7 +6,7 @@ interface PublicRouteProps {
   children: JSX.Element;
 }
 
-const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
+const PublicRouteWrapper: React.FC<PublicRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -37,4 +37,4 @@ const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   return children;
 };
 
-export default PublicRoute;
+export default PublicRouteWrapper;

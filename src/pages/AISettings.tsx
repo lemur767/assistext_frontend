@@ -1,7 +1,7 @@
 // src/pages/AISettings.tsx - Complete implementation
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { ProfileService } from '../services/profileService';s
+import { ProfileService } from '../services/profileService';
 import { Zap, Save, RotateCcw, Settings, Brain, MessageSquare } from 'lucide-react';
 
 const AISettings: React.FC = () => {

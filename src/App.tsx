@@ -1,9 +1,8 @@
 // src/App.tsx - Complete with all our pages
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute'
-import PublicRoute from './components/common/PublicRoute'
+import PublicRouteWrapper from './components/common/PublicRouteWrapper'
 import { Toaster } from 'react-hot-toast';
 import LandingPage from './pages/LandingPage'
 
@@ -20,21 +19,21 @@ import Billing from './pages/Billing';
 import Settings from './pages/Settings';
 
 // Layout
-import AuthLayout from './components/Layout/AuthLayout';
+// import AuthLayout from './components/Layout/AuthLayout';
 import AppLayout from './components/Layout/AppLayout';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
+        
         <Routes>
-          <PublicRoute>
-            <AuthLayout>
-              <Route path="/" element={<LandingPage/>} />
+          
+              <Route path="/" element={<PublicRouteWrapper><LandingPage/></PublicRouteWrapper>} />
               <Route path="login" element={<Login />} />
               <Route path="register" element={<Register />} />
-            </AuthLayout>
-          </PublicRoute>
+         
+        
         
           {/* Protected App Routes */}
           <Route path="/app" element={
