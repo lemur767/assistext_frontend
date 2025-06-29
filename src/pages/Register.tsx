@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { AuthContext, useAuth } from '../context/AuthContext';
-import RegistrationService, { type RegistrationPhoneNumber } from '../services/registrationService';
+import { useAuth } from '../context/AuthContext';
+import RegistrationService, { type CompleteSignupData, type RegistrationPhoneNumber } from '../services/registrationService';
 
 interface FormData {
   username: string;
@@ -63,36 +63,39 @@ const Register: React.FC = () => {
    * Load available phone numbers from SignalWire via backend
    * Frontend → Backend → SignalWire API → Backend → Frontend (5 numbers)
    */
-  const loadAvailableNumbers = async (): Promise<void> => {
-    setLoading(true);
-    setError('');
-    setSelectedNumber(null);
+ const loadAvailableNumbers = async (): Promise<void> => {
+  setLoading(true);
+  setError('');
+  setSelectedNumber(null);
+  
+  try {
+    console.log(`🔍 Loading phone numbers for ${formData.preferredCity}...`);
     
-    try {
-      console.log(`Loading phone numbers for ${formData.preferredCity}...`);
-      
-      // Call backend which will call SignalWire API
-      const result = await RegistrationService.searchPhoneNumbers(formData.preferredCity);
-      
-      if (result.success && result.available_numbers && result.available_numbers.length > 0) {
-        setAvailableNumbers(result.available_numbers);
-        toast.success(`Found ${result.available_numbers.length} available numbers in ${result.city}`);
-      } else {
-        setAvailableNumbers([]);
-        setError(result.error || `No phone numbers available in ${formData.preferredCity}. Please try a different city.`);
-        toast.error(result.error || 'No numbers available in this city');
-      }
-      
-    } catch (err) {
-      console.error('Error loading available numbers:', err);
+    // Call backend which will call SignalWire API
+    const result = await RegistrationService.searchPhoneNumbers(formData.preferredCity);
+    
+    console.log('📱 Search result:', result);
+    
+    if (result.success && result.available_numbers && result.available_numbers.length > 0) {
+      setAvailableNumbers(result.available_numbers);
+      toast.success(`Found ${result.available_numbers.length} available numbers in ${result.city}`);
+    } else {
       setAvailableNumbers([]);
-      setError('Failed to load available phone numbers. Please try again or select a different city.');
-      toast.error('Failed to load phone numbers');
-    } finally {
-      setLoading(false);
+      const errorMsg = result.error || `No phone numbers available in ${formData.preferredCity}. Please try a different city.`;
+      setError(errorMsg);
+      toast.error(errorMsg);
     }
-  };
-
+    
+  } catch (err: any) {
+    console.error('❌ Error loading available numbers:', err);
+    setAvailableNumbers([]);
+    const errorMsg = err.message || 'Failed to load available phone numbers. Please try again or select a different city.';
+    setError(errorMsg);
+    toast.error(errorMsg);
+  } finally {
+    setLoading(false);
+  }
+};
   // Handle input changes
   const handleInputChange = (field: keyof FormData, value: string): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -207,15 +210,8 @@ const Register: React.FC = () => {
    * This will purchase the selected SignalWire number and create the account
    */
   const handleCompleteSignup = async (): Promise<void> => {
-  // Validate phone number selection
   if (!selectedNumber) {
     setError('Please select a phone number.');
-    return;
-  }
-
-  // Validate all form data before submission
-  if (!validateStep(1) || !validateStep(2)) {
-    setError('Please complete all previous steps correctly.');
     return;
   }
 
@@ -223,9 +219,9 @@ const Register: React.FC = () => {
   setError('');
 
   try {
-    console.log(`Completing signup for ${formData.username} with number ${selectedNumber.phone_number}`);
+    console.log(`🚀 Completing signup for ${formData.username} with number ${selectedNumber.phone_number}`);
     
-    const signupData = {
+    const signupData: CompleteSignupData = {
       username: formData.username,
       email: formData.email,
       password: formData.password,
@@ -239,21 +235,16 @@ const Register: React.FC = () => {
       timezone: 'America/Toronto'
     };
 
-    // Call the registration service
+    // Complete signup (backend will purchase the SignalWire number)
     const result = await RegistrationService.completeSignup(signupData);
 
-    // FIXED: Better response handling
-    if (result && result.success) {
+    if (result.success) {
       // Store auth tokens
-      if (result.access_token) {
-        localStorage.setItem('authToken', result.access_token);
-      }
-      if (result.refresh_token) {
-        localStorage.setItem('refreshToken', result.refresh_token);
-      }
+      localStorage.setItem('authToken', result.access_token);
+      localStorage.setItem('refreshToken', result.refresh_token);
       
       setSuccess(true);
-      toast.success(`Account created! Welcome ${result.user?.first_name || formData.firstName}!`);
+      toast.success(`🎉 Account created! Welcome ${result.user.first_name}! Phone number ${selectedNumber.formatted_number} is ready for SMS AI.`);
       
       // Redirect to dashboard
       setTimeout(() => {
@@ -261,32 +252,19 @@ const Register: React.FC = () => {
       }, 2000);
       
     } else {
-      // Handle API errors with fallback messages
-      const errorMessage = result?.error || result?.message || 'Failed to create account. Please try again.';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      const errorMsg = result.error || 'Failed to create account. Please try again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
     }
   } catch (err: any) {
-    console.error('Registration error:', err);
-    
-    // FIXED: Better error extraction from API responses
-    let errorMessage = 'Error creating account. Please try again.';
-    
-    if (err.response?.data?.error) {
-      errorMessage = err.response.data.error;
-    } else if (err.response?.data?.message) {
-      errorMessage = err.response.data.message;
-    } else if (err.message) {
-      errorMessage = err.message;
-    }
-    
-    setError(errorMessage);
-    toast.error(errorMessage);
+    console.error('❌ Registration error:', err);
+    const errorMsg = err.message || 'Error creating account. Please try again.';
+    setError(errorMsg);
+    toast.error(errorMsg);
   } finally {
     setLoading(false);
   }
 };
-
 
   // Retry loading numbers if failed
   const handleRetryLoadNumbers = (): void => {

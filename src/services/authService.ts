@@ -1,7 +1,30 @@
-// src/services/authService.ts - Authentication service using apiClient
-
 import apiClient from './apiClient';
-import type { User, LoginCredentials, RegisterData } from '../types';
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  personal_phone?: string;
+  timezone?: string;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface RegisterData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
+  personalPhone?: string;
+}
 
 export interface AuthResponse {
   user: User;
@@ -9,45 +32,40 @@ export interface AuthResponse {
   refresh_token: string;
 }
 
-export interface RefreshTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-}
-
-export interface PasswordChangeData {
-  current_password: string;
-  new_password: string;
-  confirm_password: string;
-}
-
-export interface PasswordResetData {
-  token: string;
-  password: string;
-  confirm_password: string;
-}
-
 export class AuthService {
   /**
-   * Login user with credentials
+   * Login user
    */
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await apiClient.post<AuthResponse>('/api/auth/login', credentials);
+      
+      // Store tokens
+      if (response.access_token) {
+        apiClient.setToken(response.access_token);
+      }
+      
       return response;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
       throw new Error(`Login failed: ${error.message}`);
     }
   }
 
   /**
-   * Register new user
+   * Register new user (simple registration, not the multi-step one)
    */
   static async register(data: RegisterData): Promise<AuthResponse> {
     try {
       const response = await apiClient.post<AuthResponse>('/api/auth/register', data);
+      
+      // Store tokens
+      if (response.access_token) {
+        apiClient.setToken(response.access_token);
+      }
+      
       return response;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration failed:', error);
       throw new Error(`Registration failed: ${error.message}`);
     }
@@ -60,177 +78,57 @@ export class AuthService {
     try {
       const response = await apiClient.get<User>('/api/auth/me');
       return response;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to get current user:', error);
       throw new Error(`Failed to get user profile: ${error.message}`);
     }
   }
 
   /**
-   * Refresh authentication token
-   */
-  static async refreshToken(refreshToken: string): Promise<RefreshTokenResponse> {
-    try {
-      const response = await apiClient.post<RefreshTokenResponse>('/api/auth/refresh-token', {
-        refresh_token: refreshToken
-      });
-      return response;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      throw new Error(`Token refresh failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Update user profile
-   */
-  static async updateProfile(data: Partial<User>): Promise<User> {
-    try {
-      const response = await apiClient.put<User>('/api/auth/profile', data);
-      return response;
-    } catch (error) {
-      console.error('Profile update failed:', error);
-      throw new Error(`Profile update failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Change user password
-   */
-  static async changePassword(data: PasswordChangeData): Promise<{ message: string }> {
-    try {
-      const response = await apiClient.post<{ message: string }>('/api/auth/change-password', data);
-      return response;
-    } catch (error) {
-      console.error('Password change failed:', error);
-      throw new Error(`Password change failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Request password reset
-   */
-  static async requestPasswordReset(email: string): Promise<{ message: string }> {
-    try {
-      const response = await apiClient.post<{ message: string }>('/api/auth/forgot-password', {
-        email
-      });
-      return response;
-    } catch (error) {
-      console.error('Password reset request failed:', error);
-      throw new Error(`Password reset request failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Reset password with token
-   */
-  static async resetPassword(data: PasswordResetData): Promise<{ message: string }> {
-    try {
-      const response = await apiClient.post<{ message: string }>('/api/auth/reset-password', data);
-      return response;
-    } catch (error) {
-      console.error('Password reset failed:', error);
-      throw new Error(`Password reset failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Logout user (optional server-side logout)
+   * Logout user
    */
   static async logout(): Promise<void> {
     try {
       await apiClient.post('/api/auth/logout');
     } catch (error) {
-      // Ignore logout errors - token will be removed locally anyway
-      console.log('Server logout failed (this is usually fine):', error.message);
+      // Ignore logout errors
+      console.log('Logout endpoint not available or failed');
+    } finally {
+      // Always clear local tokens
+      apiClient.removeToken();
     }
   }
 
   /**
-   * Verify email address
+   * Refresh authentication token
    */
-  static async verifyEmail(token: string): Promise<{ message: string }> {
+  static async refreshToken(): Promise<{ access_token: string; refresh_token?: string }> {
     try {
-      const response = await apiClient.post<{ message: string }>('/api/auth/verify-email', {
-        token
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await apiClient.post<{ access_token: string; refresh_token?: string }>('/api/auth/refresh-token', {
+        refresh_token: refreshToken
       });
+
+      // Update stored token
+      if (response.access_token) {
+        apiClient.setToken(response.access_token);
+      }
+      if (response.refresh_token) {
+        localStorage.setItem('refreshToken', response.refresh_token);
+      }
+
       return response;
-    } catch (error) {
-      console.error('Email verification failed:', error);
-      throw new Error(`Email verification failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Resend email verification
-   */
-  static async resendEmailVerification(): Promise<{ message: string }> {
-    try {
-      const response = await apiClient.post<{ message: string }>('/api/auth/resend-verification');
-      return response;
-    } catch (error) {
-      console.error('Resend verification failed:', error);
-      throw new Error(`Resend verification failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Check if token is valid and not expired
-   */
-  static isTokenValid(token: string): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      return payload.exp > currentTime;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Get token expiration time
-   */
-  static getTokenExpiration(token: string): Date | null {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return new Date(payload.exp * 1000);
-    } catch (error) {
-      return null;
-    }
-  }
-
-  /**
-   * Check if token will expire soon (within specified minutes)
-   */
-  static willTokenExpireSoon(token: string, minutesThreshold: number = 15): boolean {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const currentTime = Math.floor(Date.now() / 1000);
-      const thresholdTime = currentTime + (minutesThreshold * 60);
-      return payload.exp < thresholdTime;
-    } catch (error) {
-      return true; // Assume it will expire if we can't parse it
+    } catch (error: any) {
+      console.error('Token refresh failed:', error);
+      // Clear tokens on refresh failure
+      apiClient.removeToken();
+      throw new Error(`Token refresh failed: ${error.message}`);
     }
   }
 }
-
-// Export individual methods for tree-shaking
-export const {
-  login,
-  register,
-  getCurrentUser,
-  refreshToken,
-  updateProfile,
-  changePassword,
-  requestPasswordReset,
-  resetPassword,
-  logout,
-  verifyEmail,
-  resendEmailVerification,
-  isTokenValid,
-  getTokenExpiration,
-  willTokenExpireSoon,
-} = AuthService;
 
 export default AuthService;
