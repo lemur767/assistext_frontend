@@ -1,100 +1,86 @@
-import { API_ENDPOINTS } from '../utils/constants';
+// src/services/apiClient.ts - Vite version
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 
 class ApiClient {
-  private baseURL: string;
-  private token: string | null = null;
+  private client: AxiosInstance;
 
-  constructor(baseURL: string = import.meta.VITE_APP_API_URL || 'https://backend.assitext.ca:5000') {
-    this.baseURL = baseURL;
-    this.token = localStorage.getItem('auth_token');
-  }
-
-  setToken(token: string) {
-    this.token = token;
-    localStorage.setItem('auth_token', token);
-  }
-
-  removeToken() {
-    this.token = null;
-    localStorage.removeItem('auth_token');
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+  constructor() {
+    // Vite uses import.meta.env instead of process.env
+    const baseURL = import.meta.env.VITE_API_URL || 'https://backend.assitext.ca';
     
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
+    console.log(`🔗 API Client initialized with baseURL: ${baseURL}`);
+    
+    this.client = axios.create({
+      baseURL,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`;
-    }
-
-    const config: RequestInit = {
-      ...options,
-      headers,
-    };
-
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          this.removeToken();
-          window.location.href = '/login';
-          throw new Error('Authentication required');
+    // Request interceptor
+    this.client.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
         
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+        console.log(`🔍 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        return config;
+      },
+      (error) => {
+        console.error('🔥 API Request Error:', error);
+        return Promise.reject(error);
       }
+    );
 
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return await response.json();
+    // Response interceptor
+    this.client.interceptors.response.use(
+      (response: AxiosResponse) => {
+        console.log(`✅ API Response: ${response.status} ${response.config.url}`);
+        console.log('📄 Response data:', response.data);
+        return response.data;
+      },
+      (error: AxiosError) => {
+        console.error('🔥 API Response Error:', error);
+        
+        if (error.response) {
+          const status = error.response.status;
+          const data = error.response.data as any;
+          
+          console.error(`❌ HTTP ${status}:`, data);
+          
+          if (status === 401) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+          }
+          
+          const errorMessage = data?.error || data?.message || `HTTP ${status} Error`;
+          return Promise.reject(new Error(errorMessage));
+          
+        } else if (error.request) {
+          console.error('❌ Network Error:', error.request);
+          return Promise.reject(new Error('Network error - Unable to reach server'));
+          
+        } else {
+          console.error('❌ Request Error:', error.message);
+          return Promise.reject(new Error(`Request failed: ${error.message}`));
+        }
       }
-      
-      return response.text() as unknown as T;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Network error occurred');
-    }
+    );
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async post<T = any>(url: string, data?: any): Promise<T> {
+    return this.client.post(url, data);
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  async get<T = any>(url: string): Promise<T> {
+    return this.client.get(url);
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PUT',
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  }
-
-  async patch<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  }
-
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE' });
-  }
+  // Add other methods as needed...
 }
 
 const apiClient = new ApiClient();

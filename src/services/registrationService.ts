@@ -66,9 +66,6 @@ export interface SupportedCity {
 }
 
 export class RegistrationService {
-  /**
-   * Search for available phone numbers in a city
-   */
   static async searchPhoneNumbers(city: string): Promise<PhoneSearchResponse> {
     try {
       console.log(`🔍 Searching for phone numbers in ${city}...`);
@@ -77,14 +74,38 @@ export class RegistrationService {
         city: city.toLowerCase() 
       });
 
-      console.log(`✅ Found ${response.available_numbers?.length || 0} numbers for ${city}`);
+      console.log(`✅ Phone search response:`, response);
+      
+      // Validate response structure
+      if (!response || typeof response !== 'object') {
+        throw new Error('Invalid response from server');
+      }
+      
+      if (response.success === false) {
+        throw new Error(response.error || 'Phone search failed');
+      }
+      
+      if (!response.available_numbers || !Array.isArray(response.available_numbers)) {
+        throw new Error('No phone numbers returned from server');
+      }
+      
+      console.log(`✅ Found ${response.available_numbers.length} numbers for ${city}`);
       return response;
       
     } catch (error: any) {
       console.error('❌ Error searching phone numbers:', error);
-      throw new Error(`Failed to load phone numbers for ${city}: ${error.message}`);
+      
+      // Provide specific error messages
+      if (error.message.includes('Network error')) {
+        throw new Error('Cannot connect to server. Please check if the backend is running on port 5000.');
+      } else if (error.message.includes('500')) {
+        throw new Error('Server error occurred. Please check the backend logs.');
+      } else {
+        throw new Error(error.message || `Failed to load phone numbers for ${city}`);
+      }
     }
   }
+
 
   /**
    * Complete registration process
