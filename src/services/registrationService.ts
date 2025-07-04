@@ -1,3 +1,5 @@
+// src/services/registrationService.ts - Enhanced with better error handling
+
 import apiClient from './apiClient';
 
 export interface RegistrationPhoneNumber {
@@ -20,6 +22,7 @@ export interface PhoneSearchResponse {
   available_numbers: RegistrationPhoneNumber[];
   city: string;
   count: number;
+  searched_area_codes?: string[];  // ✅ NEW: Added optional field from backend
   message?: string;
   error?: string;
 }
@@ -58,14 +61,10 @@ export interface SignupResponse {
   error?: string;
 }
 
-export interface SupportedCity {
-  name: string;
-  value: string;
-  area_codes: string[];
-  primary_area_code: string;
-}
-
 export class RegistrationService {
+  /**
+   * Search for available phone numbers in a city
+   */
   static async searchPhoneNumbers(city: string): Promise<PhoneSearchResponse> {
     try {
       console.log(`🔍 Searching for phone numbers in ${city}...`);
@@ -76,36 +75,45 @@ export class RegistrationService {
 
       console.log(`✅ Phone search response:`, response);
       
-      // Validate response structure
+      // ✅ ENHANCED: Better response validation
       if (!response || typeof response !== 'object') {
         throw new Error('Invalid response from server');
       }
       
       if (response.success === false) {
-        throw new Error(response.error || 'Phone search failed');
+        // ✅ ENHANCED: Use backend's improved error messages
+        const errorMessage = response.error || response.message || 'Phone search failed';
+        throw new Error(errorMessage);
       }
       
       if (!response.available_numbers || !Array.isArray(response.available_numbers)) {
         throw new Error('No phone numbers returned from server');
       }
       
-      console.log(`✅ Found ${response.available_numbers.length} numbers for ${city}`);
+      // ✅ ENHANCED: Show more detailed success info
+      const areaCodesInfo = response.searched_area_codes 
+        ? ` (searched area codes: ${response.searched_area_codes.join(', ')})`
+        : '';
+      console.log(`✅ Found ${response.available_numbers.length} numbers for ${city}${areaCodesInfo}`);
+      
       return response;
       
     } catch (error: any) {
       console.error('❌ Error searching phone numbers:', error);
       
-      // Provide specific error messages
-      if (error.message.includes('Network error')) {
+      // ✅ ENHANCED: More specific error messages
+      if (error.message.includes('Network error') || error.message.includes('fetch')) {
         throw new Error('Cannot connect to server. Please check if the backend is running on port 5000.');
       } else if (error.message.includes('500')) {
-        throw new Error('Server error occurred. Please check the backend logs.');
+        throw new Error('Server error occurred. Please check the backend logs and try again.');
+      } else if (error.message.includes('SignalWire service not available')) {
+        throw new Error('Phone number service is temporarily unavailable. Please try again later or contact support.');
       } else {
+        // Use the specific error message from backend
         throw new Error(error.message || `Failed to load phone numbers for ${city}`);
       }
     }
   }
-
 
   /**
    * Complete registration process
@@ -116,86 +124,74 @@ export class RegistrationService {
       
       const response = await apiClient.post<SignupResponse>('/api/signup/complete-signup', signupData);
 
-      if (response.success) {
+      console.log(`✅ Signup response:`, response);
+      
+      if (response && response.success) {
         console.log(`✅ Signup completed successfully for ${signupData.username}`);
+      } else {
+        // ✅ ENHANCED: Better error handling for signup
+        const errorMessage = response?.error || response?.message || 'Registration failed';
+        throw new Error(errorMessage);
       }
       
       return response;
       
     } catch (error: any) {
       console.error('❌ Error completing signup:', error);
-      throw new Error(`Registration failed: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get supported cities for registration
-   */
-  static async getSupportedCities(): Promise<{ cities: SupportedCity[] }> {
-    try {
-      const response = await apiClient.get<{ cities: SupportedCity[] }>('/api/signup/cities');
-      return response;
       
-    } catch (error: any) {
-      console.error('Error getting supported cities:', error);
-      throw new Error(`Failed to load cities: ${error.message}`);
+      // ✅ ENHANCED: More specific signup error messages
+      if (error.message.includes('Username already exists')) {
+        throw new Error('This username is already taken. Please choose a different username.');
+      } else if (error.message.includes('Email already exists')) {
+        throw new Error('This email is already registered. Please use a different email or try logging in.');
+      } else if (error.message.includes('Missing required field')) {
+        throw new Error('Please fill in all required fields and try again.');
+      } else {
+        throw new Error(error.message || 'Registration failed. Please try again.');
+      }
     }
   }
 
   /**
-   * Validate password strength
+   * ✅ NEW: Debug method to test backend connection
    */
-  static validatePassword(password: string): { isValid: boolean; errors: string[] } {
-    const errors: string[] = [];
-
-    if (password.length < 8) {
-      errors.push('Password must be at least 8 characters');
+  static async testBackendConnection(): Promise<{
+    connected: boolean;
+    signalwireAvailable: boolean;
+    configComplete: boolean;
+    details?: any;
+  }> {
+    try {
+      const response = await apiClient.get('/api/signup/debug');
+      
+      return {
+        connected: true,
+        signalwireAvailable: response.signalwire_client_created || false,
+        configComplete: response.config_check?.space_url && response.config_check?.project_id && response.config_check?.auth_token,
+        details: response
+      };
+      
+    } catch (error) {
+      console.error('❌ Backend connection test failed:', error);
+      return {
+        connected: false,
+        signalwireAvailable: false,
+        configComplete: false,
+        details: error
+      };
     }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
-    }
-    if (!/\d/.test(password)) {
-      errors.push('Password must contain at least one number');
-    }
-
-    return { isValid: errors.length === 0, errors };
   }
 
   /**
-   * Check if passwords match
+   * ✅ NEW: Get list of supported cities
    */
-  static validatePasswordMatch(password: string, confirmPassword: string): boolean {
-    return password === confirmPassword;
-  }
-
-  /**
-   * Validate email format
-   */
-  static validateEmailFormat(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-
-  /**
-   * Format phone number for display
-   */
-  static formatPhoneDisplay(phoneNumber: string): string {
-    let cleanNumber = phoneNumber;
-    if (cleanNumber.startsWith('+1')) {
-      cleanNumber = cleanNumber.slice(2);
-    } else if (cleanNumber.startsWith('1')) {
-      cleanNumber = cleanNumber.slice(1);
+  static async getSupportedCities(): Promise<any[]> {
+    try {
+      const response = await apiClient.get('/api/signup/cities');
+      return response.cities || [];
+    } catch (error) {
+      console.error('❌ Error getting supported cities:', error);
+      return [];
     }
-
-    if (cleanNumber.length === 10) {
-      return `(${cleanNumber.slice(0, 3)}) ${cleanNumber.slice(3, 6)}-${cleanNumber.slice(6)}`;
-    }
-
-    return phoneNumber;
   }
 }
-
-export default RegistrationService;
