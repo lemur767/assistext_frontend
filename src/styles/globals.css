@@ -71,7 +71,7 @@
 /* Base styles */
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Fira', system-ui, sans-serif;
     scroll-behavior: smooth;
   }
   
@@ -110,7 +110,7 @@
   }
   
   .btn-primary {
-    @apply bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 focus:ring-blue-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
+    @apply bg-gradient-to-r from-accent-500 to-purple-600 text-white hover:from-accent-700 hover:to-purple-900 focus:ring-accent-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
   }
   
   .btn-secondary {
