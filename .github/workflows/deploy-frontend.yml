@@ -51,10 +51,7 @@ jobs:
       - name: Install terser (required for production builds)
         run: npm install --save-dev terser
 
-      - name: Create production env file
-        run: |
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env.production
-          echo "VITE_WS_URL=${{ secrets.VITE_WS_URL }}" >> .env.production
+     
 
       - name: Build for production
         run: npm run build
