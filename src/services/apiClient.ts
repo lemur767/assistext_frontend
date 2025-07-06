@@ -1,4 +1,6 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+// src/services/apiClient.ts - Fixed with proper TypeScript types
+
+import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -9,13 +11,17 @@ interface ApiResponse<T = any> {
 
 class ApiClient {
   private client: AxiosInstance;
+  public baseURL: string;
 
   constructor() {
-    const baseURL = process.env.VITE_APP_API_URL || '';
+    // Use environment variable or fallback to localhost
+    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    
+    console.log(`🔗 API Client initialized with baseURL: ${this.baseURL}`);
     
     this.client = axios.create({
-      baseURL,
-      timeout: 15000, // ✅ ENHANCED: Increased timeout for SignalWire searches
+      baseURL: this.baseURL,
+      timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -23,48 +29,59 @@ class ApiClient {
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
-      (config) => {
-        const token = localStorage.getItem('authToken');
-        if (token) {
+      (config: AxiosRequestConfig) => {
+        const token = localStorage.getItem('auth_token'); // Consistent token key
+        if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        console.log(`🔍 API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
-      (error) => Promise.reject(error)
+      (error: AxiosError) => {
+        console.error('🔥 API Request Error:', error);
+        return Promise.reject(error);
+      }
     );
 
-    // Response interceptor for better error handling
+    // Response interceptor for error handling
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
-        // ✅ ENHANCED: Handle both direct data and wrapped responses
-        if (response.data && typeof response.data === 'object') {
-          return response.data;
-        }
+        console.log(`✅ API Response: ${response.status} ${response.config.url}`);
+        console.log('📄 Response data:', response.data);
+        
+        // Return the data directly for successful responses
         return response.data;
       },
       (error: AxiosError) => {
-        // ✅ ENHANCED: Better error handling for different scenarios
+        console.error('🔥 API Response Error:', error);
+        
         if (error.response) {
           // Server responded with error status
+          const status = error.response.status;
           const data = error.response.data as any;
           
-          if (data && data.error) {
-            // Backend returned structured error
-            console.error('❌ API Error:', data.error);
-            return Promise.reject(new Error(data.error));
-          } else if (data && data.message) {
-            // Backend returned message
-            console.error('❌ API Message:', data.message);
-            return Promise.reject(new Error(data.message));
-          } else {
-            // Generic HTTP error
-            console.error('❌ HTTP Error:', error.response.status, error.response.statusText);
-            return Promise.reject(new Error(`Server error: ${error.response.status}`));
+          console.error(`❌ HTTP ${status}:`, data);
+          
+          if (status === 401) {
+            // Token expired or invalid - clear all auth data
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('refresh_token');
+            // Only redirect if not already on login page
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login';
+            }
           }
+          
+          // Extract error message from response
+          const errorMessage = data?.error || data?.message || `HTTP ${status} Error`;
+          return Promise.reject(new Error(errorMessage));
+          
         } else if (error.request) {
-          // Network error - no response from server
-          console.error('❌ Network Error:', error.message);
-          return Promise.reject(new Error('Network error: Unable to connect to server. Please check if the backend is running and try again.'));
+          // Request was made but no response received
+          console.error('❌ Network Error - No response received:', error.request);
+          return Promise.reject(new Error('Network error - Unable to reach server. Please check your connection and ensure the backend is running.'));
+          
         } else {
           // Something else happened
           console.error('❌ Request Error:', error.message);
@@ -74,35 +91,62 @@ class ApiClient {
     );
   }
 
-  setToken(token: string) {
-    localStorage.setItem('authToken', token);
+  /**
+   * Set authentication token
+   */
+  setToken(token: string): void {
+    localStorage.setItem('auth_token', token); // Consistent token key
   }
 
-  removeToken() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('refreshToken');
+  /**
+   * Remove authentication tokens
+   */
+  removeToken(): void {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('refresh_token');
   }
 
-  async get<T = any>(url: string): Promise<T> {
-    return this.client.get(url);
+  /**
+   * GET request
+   */
+  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return this.client.get(url, config);
   }
 
-  async post<T = any>(url: string, data?: any): Promise<T> {
-    return this.client.post(url, data);
+  /**
+   * POST request
+   */
+  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    return this.client.post(url, data, config);
   }
 
-  async put<T = any>(url: string, data?: any): Promise<T> {
-    return this.client.put(url, data);
+  /**
+   * PUT request
+   */
+  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    return this.client.put(url, data, config);
   }
 
-  async delete<T = any>(url: string): Promise<T> {
-    return this.client.delete(url);
+  /**
+   * DELETE request
+   */
+  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
+    return this.client.delete(url, config);
   }
 
-  // ✅ NEW: Test connection method
+  /**
+   * PATCH request
+   */
+  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
+    return this.client.patch(url, data, config);
+  }
+
+  /**
+   * Test connection to backend
+   */
   async testConnection(): Promise<boolean> {
     try {
-      await this.client.get('/api/signup/test');
+      await this.client.get('/api/health');
       return true;
     } catch (error) {
       console.error('🔥 Connection test failed:', error);
@@ -110,10 +154,12 @@ class ApiClient {
     }
   }
 
-  // ✅ NEW: Get backend debug info
+  /**
+   * Get backend debug info
+   */
   async getDebugInfo(): Promise<any> {
     try {
-      return await this.client.get('/api/signup/debug');
+      return await this.client.get('/api/health');
     } catch (error) {
       console.error('🔥 Debug info failed:', error);
       return null;

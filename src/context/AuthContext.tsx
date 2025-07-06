@@ -1,9 +1,9 @@
-// src/context/AuthContext.tsx - Updated to use apiClient service pattern
+// src/context/AuthContext.tsx - Fixed with proper TypeScript types
 
 import React, { createContext, useReducer, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import apiClient from '../services/apiClient';
-import type { User, LoginCredentials, RegisterData } from '../types';
+import type { User, LoginCredentials, RegisterData } from '../types/auth';
 
 // Define the AuthState type
 export interface AuthState {
@@ -22,7 +22,7 @@ export interface AuthContextType extends AuthState {
   logout: () => void;
   clearError: () => void;
   updateUser: (userData: Partial<User>) => void;
-  refreshToken: () => Promise<void>;
+  refreshTokenFunc: () => Promise<void>;
 }
 
 // Define action types
@@ -127,6 +127,14 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   }
 };
 
+// JWT interface for token decoding
+interface JWTPayload {
+  exp: number;
+  iat: number;
+  sub: string;
+  [key: string]: any;
+}
+
 // Create context
 export const AuthContext = createContext<AuthContextType>({
   ...initialState,
@@ -135,7 +143,7 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
   clearError: () => {},
   updateUser: () => {},
-  refreshToken: async () => {},
+  refreshTokenFunc: async () => {},
 });
 
 // Provider component
@@ -150,6 +158,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  // Load user data
+  const loadUser = useCallback(async () => {
+    try {
+      const response = await apiClient.get<{ user: User }>('/api/auth/me');
+      dispatch({
+        type: 'AUTH_SUCCESS',
+        payload: {
+          user: response.user,
+          token: state.token!,
+          refreshToken: state.refreshToken!,
+        },
+      });
+    } catch (err: any) {
+      console.error('Failed to load user:', err);
+      dispatch({ type: 'AUTH_FAIL', payload: 'Failed to load user data' });
+    }
+  }, [state.token, state.refreshToken]);
+
   // Auto-refresh token function
   const refreshTokenFunc = useCallback(async () => {
     if (!state.refreshToken) {
@@ -161,8 +187,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await apiClient.post<{
         access_token: string;
         refresh_token?: string;
-      }>('/api/auth/refresh-token', {
-        refresh_token: state.refreshToken
+      }>('/api/auth/refresh', {
+        refresh_token: state.refreshToken,
       });
 
       dispatch({
@@ -178,30 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [state.refreshToken]);
 
-  // Load user data
-  const loadUser = useCallback(async () => {
-    if (!state.token) {
-      dispatch({ type: 'SET_LOADING', payload: false });
-      return;
-    }
-
-    try {
-      const user = await apiClient.get<User>('/api/auth/me');
-      dispatch({ 
-        type: 'UPDATE_USER', 
-        payload: user 
-      });
-      dispatch({ 
-        type: 'SET_LOADING', 
-        payload: false 
-      });
-    } catch (err: any) {
-      console.error('Failed to load user:', err);
-      dispatch({ type: 'LOGOUT' });
-    }
-  }, [state.token]);
-
-  // Check token expiration and set up token refresh
+  // Check token expiration and load user on mount
   useEffect(() => {
     const checkTokenExpiration = async () => {
       if (!state.token) {
@@ -211,16 +214,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         // Decode token to check expiration
-        const decoded: any = jwtDecode(state.token);
-        const currentTime = Date.now() / 1000;
+        const decoded = jwtDecode<JWTPayload>(state.token);
+        const currentTime = Math.floor(Date.now() / 1000);
 
-        // If token is expired
-        if (decoded.exp < currentTime) {
-          console.log('Token expired, attempting refresh...');
-          await refreshTokenFunc();
-        }
-        // If token is valid but will expire soon (less than 15 minutes)
-        else if (decoded.exp < currentTime + 15 * 60) {
+        // If token expires in less than 5 minutes, refresh it
+        if (decoded.exp - currentTime < 300) {
           console.log('Token expiring soon, refreshing...');
           await refreshTokenFunc();
         }
@@ -251,7 +249,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state.isAuthenticated, state.token, refreshTokenFunc]);
 
   // Login user
-  const login = async (credentials: LoginCredentials) => {
+  const login = useCallback(async (credentials: LoginCredentials) => {
     dispatch({ type: 'AUTH_START' });
 
     try {
@@ -260,7 +258,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         access_token: string;
         refresh_token: string;
       }>('/api/auth/login', credentials);
-      
+
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
@@ -274,10 +272,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'AUTH_FAIL', payload: errorMessage });
       throw new Error(errorMessage);
     }
-  };
+  }, []);
 
   // Register user
-  const register = async (data: RegisterData) => {
+  const register = useCallback(async (data: RegisterData) => {
     dispatch({ type: 'AUTH_START' });
 
     try {
@@ -286,7 +284,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         access_token: string;
         refresh_token: string;
       }>('/api/auth/register', data);
-      
+
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: {
@@ -300,7 +298,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       dispatch({ type: 'AUTH_FAIL', payload: errorMessage });
       throw new Error(errorMessage);
     }
-  };
+  }, []);
 
   // Logout user
   const logout = useCallback(() => {
@@ -311,24 +309,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Logout endpoint not available or failed');
       });
     }
-    
+
     dispatch({ type: 'LOGOUT' });
   }, [state.token]);
 
   // Clear error
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' });
-  };
+  }, []);
 
   // Update user data
-  const updateUser = (userData: Partial<User>) => {
+  const updateUser = useCallback((userData: Partial<User>) => {
     if (!state.user) return;
-    
+
     dispatch({
       type: 'UPDATE_USER',
       payload: { ...state.user, ...userData },
     });
-  };
+  }, [state.user]);
 
   return (
     <AuthContext.Provider
