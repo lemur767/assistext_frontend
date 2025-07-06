@@ -1,500 +1,465 @@
-// src/pages/Register.tsx - Updated with live SignalWire integration
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import RegistrationService, { type CompleteSignupData, type RegistrationPhoneNumber } from '../services/registrationService';
+import type { RegisterData } from '../types/auth';
+import { 
+  User, 
+  Mail, 
+  Lock, 
+  ArrowRight,
+  Check,
+  AlertCircle,
+  MessageCircle,
+  Zap,
+  Shield
+} from 'lucide-react';
 
 interface FormData {
   username: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;
-  firstName: string;
-  lastName: string;
-  profileName: string;
-  profileDescription: string;
-  personalPhone: string;
-  preferredCity: string;
+  agreeToTerms: boolean;
+}
+
+interface ValidationErrors {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  agreeToTerms?: string;
+}
+
+interface PasswordStrength {
+  strength: number;
+  label: string;
+  color: string;
 }
 
 const Register: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { register, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
-
-  // Multi-step form state
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [availableNumbers, setAvailableNumbers] = useState<RegistrationPhoneNumber[]>([]);
-  const [selectedNumber, setSelectedNumber] = useState<RegistrationPhoneNumber | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [success, setSuccess] = useState<boolean>(false);
-
-  // Form data state
+  
   const [formData, setFormData] = useState<FormData>({
     username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    profileName: '',
-    profileDescription: '',
-    personalPhone: '',
-    preferredCity: 'toronto'
+    agreeToTerms: false
   });
+  
+  const [localLoading, setLocalLoading] = useState<boolean>(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  // Clear auth errors when component mounts
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/app/dashboard');
-    }
-  }, [isAuthenticated, navigate]);
-
-  // Load available numbers when reaching step 3 or when city changes
-  useEffect(() => {
-    if (currentStep === 3 && formData.preferredCity) {
-      loadAvailableNumbers();
-    }
-  }, [currentStep, formData.preferredCity]);
-
-  /**
-   * Load available phone numbers from SignalWire via backend
-   * Frontend → Backend → SignalWire API → Backend → Frontend (5 numbers)
-   */
- const loadAvailableNumbers = async (): Promise<void> => {
-  setLoading(true);
-  setError('');
-  setSelectedNumber(null);
-  
-  try {
-    console.log(`🔍 Loading phone numbers for ${formData.preferredCity}...`);
-    
-    // Call backend which will call SignalWire API
-    const result = await RegistrationService.searchPhoneNumbers(formData.preferredCity);
-    
-    console.log('📱 Search result:', result);
-    
-    if (result.success && result.available_numbers && result.available_numbers.length > 0) {
-      setAvailableNumbers(result.available_numbers);
-      toast.success(`Found ${result.available_numbers.length} available numbers in ${result.city}`);
-    } else {
-      setAvailableNumbers([]);
-      const errorMsg = result.error || `No phone numbers available in ${formData.preferredCity}. Please try a different city.`;
-      setError(errorMsg);
-      toast.error(errorMsg);
-    }
-    
-  } catch (err: any) {
-    console.error('❌ Error loading available numbers:', err);
-    setAvailableNumbers([]);
-    const errorMsg = err.message || 'Failed to load available phone numbers. Please try again or select a different city.';
-    setError(errorMsg);
-    toast.error(errorMsg);
-  } finally {
-    setLoading(false);
+  if (isAuthenticated) {
+    return <Navigate to="/app/dashboard" replace />;
   }
-};
-  // Handle input changes
-  const handleInputChange = (field: keyof FormData, value: string): void => {
+
+  // Show loading spinner while checking authentication status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-brand-bg dark:bg-brand-bg-dark flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary dark:border-brand-primary-dark"></div>
+      </div>
+    );
+  }
+
+  const validateForm = (): boolean => {
+    const errors: ValidationErrors = {};
+    
+    // Username validation
+    if (!formData.username.trim()) {
+      errors.username = 'Username is required';
+    } else if (formData.username.length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      errors.username = 'Username can only contain letters, numbers, and underscores';
+    }
+    
+    // Name validation
+    if (!formData.firstName.trim()) errors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) errors.lastName = 'Last name is required';
+    
+    // Email validation
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+    
+    // Password validation
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      errors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+    }
+    
+    // Confirm password validation
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    // Terms validation
+    if (!formData.agreeToTerms) {
+      errors.agreeToTerms = 'You must agree to the terms and conditions';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setLocalLoading(true);
+    clearError();
+    
+    try {
+      // Prepare registration data according to your RegisterData type
+      const registrationData: RegisterData = {
+        username: formData.username.trim(),
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+        password_confirm: formData.confirmPassword, // Required by RegisterData interface
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim()
+      };
+      
+      // Use auth context register function
+      await register(registrationData);
+      
+      // Registration successful - user will be redirected by auth context or Navigate component above
+      navigate('/app/dashboard');
+      
+    } catch (err) {
+      // Error is handled by auth context and will be shown via error state
+      console.error('Registration failed:', err);
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: keyof FormData, value: string | boolean): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Clear errors when user starts typing
-    if (error) {
-      setError('');
-    }
-    
-    // If city changes and we're on step 3, reload numbers
-    if (field === 'preferredCity' && currentStep === 3) {
-      setAvailableNumbers([]);
-      setSelectedNumber(null);
-      // Numbers will be reloaded by useEffect
+    // Clear validation error when user starts typing
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
-  // Handle phone number selection
-  const handleNumberSelect = (number: RegistrationPhoneNumber): void => {
-    setSelectedNumber(number);
-    if (error) {
-      setError('');
-    }
-    toast.success(`Selected ${number.formatted_number}`);
-  };
-
-  // Step validation
-  const validateStep = (step: number): boolean => {
-  switch (step) {
-    case 1:
-      const passwordValid = RegistrationService.validatePassword(formData.password);
-      const passwordsMatch = RegistrationService.validatePasswordMatch(formData.password, formData.confirmPassword);
-      const emailValid = RegistrationService.validateEmailFormat(formData.email);
-      
-      // FIXED: Removed the ! and used !! for proper boolean conversion
-      return !!(
-        formData.username &&
-        formData.email &&
-        formData.password &&
-        formData.confirmPassword &&
-        formData.firstName &&
-        formData.lastName &&
-        passwordValid.isValid &&
-        passwordsMatch &&
-        emailValid
-      );
+  const getPasswordStrength = (): PasswordStrength => {
+    const password = formData.password;
+    if (!password) return { strength: 0, label: '', color: 'bg-surface-300' };
     
-    case 2:
-      return !!(formData.profileName && formData.preferredCity);
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z\d]/.test(password)) strength++;
     
-    case 3:
-      return !!selectedNumber;
+    const labels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
     
-    default:
-      return false;
-  }
-};
-  const handleNextStep = (): void => {
-  if (validateStep(currentStep)) {
-    setCurrentStep(prev => prev + 1);
-    setError('');
-    return; // Exit early on success
-  }
-
-  // Only run error logic if validation fails
-  switch (currentStep) {
-    case 1:
-      // Check validation conditions individually for specific error messages
-      const passwordValidation = RegistrationService.validatePassword(formData.password);
-      const passwordsMatch = RegistrationService.validatePasswordMatch(formData.password, formData.confirmPassword);
-      const emailValid = RegistrationService.validateEmailFormat(formData.email);
-      
-      // Priority order for error messages
-      if (!formData.username || !formData.email || !formData.firstName || !formData.lastName) {
-        setError('Please fill in all required fields');
-      } else if (!emailValid) {
-        setError('Please enter a valid email address');
-      } else if (!formData.password || !formData.confirmPassword) {
-        setError('Please enter and confirm your password');
-      } else if (!passwordValidation.isValid) {
-        setError('Password must be at least 8 characters with uppercase, lowercase, and number');
-      } else if (!passwordsMatch) {
-        setError('Passwords do not match');
-      } else {
-        setError('Please complete all required fields correctly');
-      }
-      break;
-    case 2:
-      if (!formData.profileName) {
-        setError('Please enter a profile name');
-      } else if (!formData.preferredCity) {
-        setError('Please select a city');
-      } else {
-        setError('Please complete your profile information');
-      }
-      break;
-    case 3:
-      setError('Please select a phone number');
-      break;
-    default:
-      setError('Please complete all required fields');
-  }
-};
-
-  const handlePrevStep = (): void => {
-    setCurrentStep(prev => prev - 1);
-    setError('');
-  };
-
-  /**
-   * Complete signup process
-   * This will purchase the selected SignalWire number and create the account
-   */
-  const handleCompleteSignup = async (): Promise<void> => {
-  if (!selectedNumber) {
-    setError('Please select a phone number.');
-    return;
-  }
-
-  setLoading(true);
-  setError('');
-
-  try {
-    console.log(`🚀 Completing signup for ${formData.username} with number ${selectedNumber.phone_number}`);
-    
-    const signupData: CompleteSignupData = {
-      username: formData.username,
-      email: formData.email,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      profileName: formData.profileName,
-      profileDescription: formData.profileDescription,
-      personalPhone: formData.personalPhone,
-      selectedPhoneNumber: selectedNumber.phone_number,
-      timezone: 'America/Toronto'
+    return {
+      strength,
+      label: labels[strength - 1] || '',
+      color: colors[strength - 1] || 'bg-surface-300'
     };
-
-    // Complete signup (backend will purchase the SignalWire number)
-    const result = await RegistrationService.completeSignup(signupData);
-
-    if (result.success) {
-      // Store auth tokens
-      localStorage.setItem('authToken', result.access_token);
-      localStorage.setItem('refreshToken', result.refresh_token);
-      
-      setSuccess(true);
-      toast.success(`🎉 Account created! Welcome ${result.user.first_name}! Phone number ${selectedNumber.formatted_number} is ready for SMS AI.`);
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-        navigate('app/dashboard');
-      }, 2000);
-      
-    } else {
-      const errorMsg = result.error || 'Failed to create account. Please try again.';
-      setError(errorMsg);
-      toast.error(errorMsg);
-    }
-  } catch (err: any) {
-    console.error('❌ Registration error:', err);
-    const errorMsg = err.message || 'Error creating account. Please try again.';
-    setError(errorMsg);
-    toast.error(errorMsg);
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // Retry loading numbers if failed
-  const handleRetryLoadNumbers = (): void => {
-    loadAvailableNumbers();
   };
+
+  const passwordStrength = getPasswordStrength();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
+    <div className="min-h-screen bg-brand-bg dark:bg-brand-bg-dark flex items-center justify-center py-12 px-4">
+      <div className="max-w-md w-full">
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
-          <p className="text-gray-600 mt-2">Join SMS AI and get your phone number</p>
-          
-          {/* Progress indicator */}
-          <div className="flex justify-center mt-6 space-x-2">
-            {[1, 2, 3].map((step) => (
-              <div
-                key={step}
-                className={`w-3 h-3 rounded-full ${
-                  step <= currentStep
-                    ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-              />
-            ))}
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-12 h-12 bg-brand-primary dark:bg-brand-primary-dark rounded-xl flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </div>
           </div>
-          <p className="text-sm text-gray-500 mt-2">
-            Step {currentStep} of 3
+          
+          <h1 className="text-3xl font-bold text-brand-text dark:text-brand-text-dark mb-2">
+            Join AssisText
+          </h1>
+          <p className="text-surface-600 dark:text-surface-400">
+            Start automating your SMS responses with AI
           </p>
         </div>
 
-        {/* Step content */}
-        {currentStep === 1 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="First Name"
-                value={formData.firstName}
-                onChange={(e) => handleInputChange('firstName', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              <input
-                type="text"
-                placeholder="Last Name"
-                value={formData.lastName}
-                onChange={(e) => handleInputChange('lastName', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
+        {/* Registration Form */}
+        <div className="card p-8 bg-white dark:bg-surface-800 border-surface-200 dark:border-surface-700">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Username */}
+            <div>
+              <label className="block text-sm font-medium text-brand-text dark:text-brand-text-dark mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
+                <input
+                  type="text"
+                  value={formData.username}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('username', e.target.value)}
+                  className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
+                    validationErrors.username ? 'border-red-500' : ''
+                  }`}
+                  placeholder="johndoe"
+                  disabled={localLoading}
+                />
+              </div>
+              {validationErrors.username && <p className="text-red-500 text-sm mt-1">{validationErrors.username}</p>}
+              <p className="text-xs text-surface-500 dark:text-surface-400 mt-1">
+                Choose a unique username (letters, numbers, and underscores only)
+              </p>
             </div>
-            
-            <input
-              type="text"
-              placeholder="Username"
-              value={formData.username}
-              onChange={(e) => handleInputChange('username', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            
-            <input
-              type="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            
-            <input
-              type="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) => handleInputChange('password', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-        )}
 
-        {currentStep === 2 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Profile Setup</h2>
-            
-            <input
-              type="text"
-              placeholder="Profile Name (e.g., My Business)"
-              value={formData.profileName}
-              onChange={(e) => handleInputChange('profileName', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            
-            <textarea
-              placeholder="Profile Description (optional)"
-              value={formData.profileDescription}
-              onChange={(e) => handleInputChange('profileDescription', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-            />
-            
-            <select
-              value={formData.preferredCity}
-              onChange={(e) => handleInputChange('preferredCity', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="toronto">Toronto, ON</option>
-              <option value="ottawa">Ottawa, ON</option>
-              <option value="vancouver">Vancouver, BC</option>
-              <option value="montreal">Montreal, QC</option>
-              <option value="calgary">Calgary, AB</option>
-              <option value="edmonton">Edmonton, AB</option>
-              <option value="mississauga">Mississauga, ON</option>
-              <option value="hamilton">Hamilton, ON</option>
-              <option value="london">London, ON</option>
-              <option value="winnipeg">Winnipeg, MB</option>
-            </select>
-          </div>
-        )}
-
-        {currentStep === 3 && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-gray-900">Choose Your Phone Number</h2>
-            <p className="text-sm text-gray-600">
-              Select a phone number for SMS AI in {formData.preferredCity.charAt(0).toUpperCase() + formData.preferredCity.slice(1)}
-            </p>
-            
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-gray-600 mt-2">Loading available numbers from SignalWire...</p>
-              </div>
-            ) : availableNumbers.length > 0 ? (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {availableNumbers.map((number) => (
-                  <div
-                    key={number.phone_number}
-                    onClick={() => handleNumberSelect(number)}
-                    className={`p-3 border rounded-md cursor-pointer transition-colors ${
-                      selectedNumber?.phone_number === number.phone_number
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-300 hover:border-blue-300'
+            {/* Name Fields */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-brand-text dark:text-brand-text-dark mb-2">
+                  First Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
+                  <input
+                    type="text"
+                    value={formData.firstName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('firstName', e.target.value)}
+                    className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
+                      validationErrors.firstName ? 'border-red-500' : ''
                     }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold">{number.formatted_number}</p>
-                        <p className="text-sm text-gray-600">{number.locality}, {number.region}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">Setup: {number.setup_cost}</p>
-                        <p className="text-sm text-gray-600">Monthly: {number.monthly_cost}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    placeholder="John"
+                    disabled={localLoading}
+                  />
+                </div>
+                {validationErrors.firstName && <p className="text-red-500 text-sm mt-1">{validationErrors.firstName}</p>}
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">No numbers available in {formData.preferredCity}</p>
+
+              <div>
+                <label className="block text-sm font-medium text-brand-text dark:text-brand-text-dark mb-2">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
+                  <input
+                    type="text"
+                    value={formData.lastName}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('lastName', e.target.value)}
+                    className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
+                      validationErrors.lastName ? 'border-red-500' : ''
+                    }`}
+                    placeholder="Doe"
+                    disabled={localLoading}
+                  />
+                </div>
+                {validationErrors.lastName && <p className="text-red-500 text-sm mt-1">{validationErrors.lastName}</p>}
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-brand-text dark:text-brand-text-dark mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('email', e.target.value)}
+                  className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
+                    validationErrors.email ? 'border-red-500' : ''
+                  }`}
+                  placeholder="john@example.com"
+                  disabled={localLoading}
+                />
+              </div>
+              {validationErrors.email && <p className="text-red-500 text-sm mt-1">{validationErrors.email}</p>}
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-brand-text dark:text-brand-text-dark mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('password', e.target.value)}
+                  className={`input w-full pl-10 pr-12 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
+                    validationErrors.password ? 'border-red-500' : ''
+                  }`}
+                  placeholder="••••••••"
+                  disabled={localLoading}
+                />
                 <button
-                  onClick={handleRetryLoadNumbers}
-                  className="text-blue-600 hover:text-blue-800 underline"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-surface-400 hover:text-surface-600 dark:hover:text-surface-300"
                 >
-                  Try again
+                  {showPassword ? '👁️' : '👁️‍🗨️'}
                 </button>
               </div>
-            )}
-          </div>
-        )}
+              
+              {/* Password Strength Indicator */}
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-surface-600 dark:text-surface-400">Password strength</span>
+                    <span className={`text-xs font-medium ${
+                      passwordStrength.strength >= 4 ? 'text-green-600' : 
+                      passwordStrength.strength >= 3 ? 'text-blue-600' :
+                      passwordStrength.strength >= 2 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                  <div className="w-full bg-surface-200 dark:bg-surface-600 rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color}`}
+                      style={{ width: `${(passwordStrength.strength / 5) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+              
+              {validationErrors.password && <p className="text-red-500 text-sm mt-1">{validationErrors.password}</p>}
+            </div>
 
-        {/* Error message */}
-        {error && (
-          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        )}
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-brand-text dark:text-brand-text-dark mb-2">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
+                <input
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('confirmPassword', e.target.value)}
+                  className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
+                    validationErrors.confirmPassword ? 'border-red-500' : ''
+                  }`}
+                  placeholder="••••••••"
+                  disabled={localLoading}
+                />
+              </div>
+              {validationErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
+            </div>
 
-        {/* Success message */}
-        {success && (
-          <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-            <p className="text-green-600 text-sm">Account created successfully! Redirecting...</p>
-          </div>
-        )}
+            {/* Terms Agreement */}
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="agreeToTerms"
+                checked={formData.agreeToTerms}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('agreeToTerms', e.target.checked)}
+                className="mt-1 h-4 w-4 text-brand-primary dark:text-brand-primary-dark border-surface-300 dark:border-surface-600 rounded focus:ring-brand-primary dark:focus:ring-brand-primary-dark"
+                disabled={localLoading}
+              />
+              <label htmlFor="agreeToTerms" className="ml-3 text-sm text-brand-text dark:text-brand-text-dark">
+                I agree to the{' '}
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-brand-primary dark:text-brand-primary-dark hover:underline">
+                  Terms of Service
+                </a>{' '}
+                and{' '}
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-brand-primary dark:text-brand-primary-dark hover:underline">
+                  Privacy Policy
+                </a>
+              </label>
+            </div>
+            {validationErrors.agreeToTerms && <p className="text-red-500 text-sm">{validationErrors.agreeToTerms}</p>}
 
-        {/* Navigation buttons */}
-        <div className="flex justify-between mt-8">
-          {currentStep > 1 && (
+            {/* Submit Button */}
             <button
-              onClick={handlePrevStep}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-              disabled={loading}
+              type="submit"
+              disabled={localLoading}
+              className="btn w-full bg-brand-primary dark:bg-brand-primary-dark text-white hover:bg-brand-primary/90 dark:hover:bg-brand-primary-dark/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
-              Previous
+              {localLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
             </button>
-          )}
-          
-          <div className="ml-auto">
-            {currentStep < 3 ? (
-              <button
-                onClick={handleNextStep}
-                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-               // disabled={loading || !validateStep(currentStep)}
-                
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                onClick={handleCompleteSignup}
-                className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
-                disabled={loading || !selectedNumber}
-              >
-                {loading ? 'Creating Account...' : 'Complete Registration'}
-              </button>
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex">
+                  <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
+                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                </div>
+              </div>
             )}
+          </form>
+        </div>
+
+        {/* Features Preview */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="text-center">
+            <div className="w-10 h-10 bg-brand-primary/10 dark:bg-brand-primary-dark/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Zap className="w-5 h-5 text-brand-primary dark:text-brand-primary-dark" />
+            </div>
+            <p className="text-xs text-surface-600 dark:text-surface-400">AI-Powered Responses</p>
           </div>
+          
+          <div className="text-center">
+            <div className="w-10 h-10 bg-brand-primary/10 dark:bg-brand-primary-dark/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <MessageCircle className="w-5 h-5 text-brand-primary dark:text-brand-primary-dark" />
+            </div>
+            <p className="text-xs text-surface-600 dark:text-surface-400">SMS Automation</p>
+          </div>
+          
+          <div className="text-center">
+            <div className="w-10 h-10 bg-brand-primary/10 dark:bg-brand-primary-dark/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Shield className="w-5 h-5 text-brand-primary dark:text-brand-primary-dark" />
+            </div>
+            <p className="text-xs text-surface-600 dark:text-surface-400">Secure & Reliable</p>
+          </div>
+        </div>
+
+        {/* Login Link */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-surface-600 dark:text-surface-400">
+            Already have an account?{' '}
+            <a href="/login" className="text-brand-primary dark:text-brand-primary-dark hover:underline font-medium">
+              Sign in
+            </a>
+          </p>
         </div>
       </div>
     </div>

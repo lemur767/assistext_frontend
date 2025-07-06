@@ -68,45 +68,7 @@ export interface SupportedCity {
 }
 
 class RegistrationService {
-  /**
-   * Search for available phone numbers in a city
-   */
-  static async searchPhoneNumbers(city: string): Promise<PhoneSearchResponse> {
-    try {
-      console.log(`🔍 Searching for phone numbers in ${city}...`);
-      
-      // Test connection first
-      const connectionOk = await apiClient.testConnection();
-      if (!connectionOk) {
-        throw new Error('Cannot connect to server. Please check if the backend is running.');
-      }
-
-      const response = await apiClient.post<PhoneSearchResponse>('/api/signup/search-numbers', {
-        city: city.toLowerCase(),
-        limit: 5
-      });
-
-      console.log('📱 Phone search response:', response);
-      
-      if (response.success && response.available_numbers) {
-        console.log(`✅ Found ${response.available_numbers.length} numbers in ${response.city}`);
-      }
-      
-      return response;
-      
-    } catch (error: any) {
-      console.error('❌ Error searching phone numbers:', error);
-      
-      if (error.message.includes('ECONNREFUSED') || error.message.includes('Network Error')) {
-        throw new Error('Cannot connect to server. Please check if the backend is running on port 5000.');
-      } else if (error.message.includes('500')) {
-        throw new Error('Server error occurred. Please check the backend logs.');
-      } else {
-        throw new Error(error.message || `Failed to load phone numbers for ${city}`);
-      }
-    }
-  }
-
+ 
   /**
    * Complete registration process
    */
@@ -128,19 +90,7 @@ class RegistrationService {
     }
   }
 
-  /**
-   * Get supported cities for registration
-   */
-  static async getSupportedCities(): Promise<{ cities: SupportedCity[] }> {
-    try {
-      const response = await apiClient.get<{ cities: SupportedCity[] }>('/api/signup/cities');
-      return response;
-      
-    } catch (error: any) {
-      console.error('Error getting supported cities:', error);
-      throw new Error(`Failed to load cities: ${error.message}`);
-    }
-  }
+ 
 
   /**
    * Validate password strength
@@ -179,24 +129,7 @@ class RegistrationService {
     return emailRegex.test(email);
   }
 
-  /**
-   * Format phone number for display
-   */
-  static formatPhoneDisplay(phoneNumber: string): string {
-    let cleanNumber = phoneNumber;
-    if (cleanNumber.startsWith('+1')) {
-      cleanNumber = cleanNumber.slice(2);
-    } else if (cleanNumber.startsWith('1')) {
-      cleanNumber = cleanNumber.slice(1);
-    }
 
-    if (cleanNumber.length === 10) {
-      return `(${cleanNumber.slice(0, 3)}) ${cleanNumber.slice(3, 6)}-${cleanNumber.slice(6)}`;
-    }
-
-    return phoneNumber;
-  }
 }
-
 // Export as default
 export default RegistrationService;
