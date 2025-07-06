@@ -15,7 +15,7 @@ class ApiClient {
 
   constructor() {
     // Use environment variable or fallback to localhost
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    this.baseURL = process.env.VITE_APP_API_URL || 'https://backend.assitext.ca';
     
     console.log(`🔗 API Client initialized with baseURL: ${this.baseURL}`);
     
