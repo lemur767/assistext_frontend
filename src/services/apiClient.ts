@@ -11,7 +11,7 @@ class ApiClient {
   private client: AxiosInstance;
 
   constructor() {
-    const baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+    const baseURL = process.env.VITE_APP_API_URL || '';
     
     this.client = axios.create({
       baseURL,
