@@ -43,6 +43,6 @@
     "terser": "^5.43.1",
     "typescript": "^5.2.2",
     "vite": "^6.3.5",
-    "@types/axios":"0.14.4"
+    
   }
 }
