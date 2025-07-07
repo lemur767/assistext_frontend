@@ -19,7 +19,7 @@ interface FormData {
   lastName: string;
   email: string;
   password: string;
-  passwordConfirm: string;
+  confirmPassword: string;
   agreeToTerms: boolean;
 }
 
@@ -29,7 +29,7 @@ interface ValidationErrors {
   lastName?: string;
   email?: string;
   password?: string;
-  passwordConfirm?: string;
+  confirmPassword?: string;
   agreeToTerms?: string;
 }
 
@@ -49,7 +49,7 @@ const Register: React.FC = () => {
     lastName: '',
     email: '',
     password: '',
-    passwordConfirm: '',
+    confirmPassword: '',
     agreeToTerms: false
   });
   
@@ -109,8 +109,8 @@ const Register: React.FC = () => {
     }
     
     // Confirm password validation
-    if (formData.password !== formData.passwordConfirm) {
-      errors.passwordConfirm= 'Passwords do not match';
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
     }
     
     // Terms validation
@@ -136,13 +136,13 @@ const Register: React.FC = () => {
         username: formData.username.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        password_confirm: formData.passwordConfirm, // Keep if backend expects this
+        password_confirm: formData.confirmPassword, // Keep if backend expects this
         firstName: formData.firstName.trim(),        // Try camelCase first
         lastName: formData.lastName.trim()          // Try camelCase first
       };
       
       // Use auth context register function - it handles the API call
-      await register(registrationData);
+      await register(registrationData as any); // Use 'as any' since field names changed
       
       // Registration successful - redirect to dashboard
       navigate('/app/dashboard');
@@ -400,7 +400,7 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={localLoading}
-              className="btn w-full bg-primary-500 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="btn w-full bg-brand-primary dark:bg-brand-primary-dark text-white hover:bg-brand-primary/90 dark:hover:bg-brand-primary-dark/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {localLoading ? (
                 <>

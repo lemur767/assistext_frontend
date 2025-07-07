@@ -1,15 +1,162 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
-
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  isDark: boolean;
-  toggleTheme: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
+  setDarkMode: (isDark: boolean) => void;
+  systemPreference: boolean;
+  isSystemMode: boolean;
+  setSystemMode: (useSystem: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+const STORAGE_KEY = 'assistext-theme-preference';
+const SYSTEM_MODE_KEY = 'assistext-use-system-theme';
+
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  defaultTheme?: 'light' | 'dark' | 'system';
+}
+
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ 
+  children, 
+  defaultTheme = 'system' 
+}) => {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [systemPreference, setSystemPreference] = useState<boolean>(false);
+  const [isSystemMode, setIsSystemMode] = useState<boolean>(true);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+
+  // Get system preference
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    setSystemPreference(mediaQuery.matches);
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setSystemPreference(e.matches);
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, []);
+
+  // Initialize theme from storage or default
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const savedUseSystem = localStorage.getItem(SYSTEM_MODE_KEY);
+      const savedTheme = localStorage.getItem(STORAGE_KEY);
+
+      if (savedUseSystem !== null) {
+        const useSystem = JSON.parse(savedUseSystem);
+        setIsSystemMode(useSystem);
+
+        if (useSystem) {
+          setIsDarkMode(systemPreference);
+        } else if (savedTheme !== null) {
+          setIsDarkMode(JSON.parse(savedTheme));
+        }
+      } else {
+        // First visit - use default
+        if (defaultTheme === 'system') {
+          setIsSystemMode(true);
+          setIsDarkMode(systemPreference);
+        } else {
+          setIsSystemMode(false);
+          setIsDarkMode(defaultTheme === 'dark');
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to load theme preference:', error);
+      setIsDarkMode(systemPreference);
+    } finally {
+      setIsInitialized(true);
+    }
+  }, [systemPreference, defaultTheme]);
+
+  // Update theme when system preference changes (if in system mode)
+  useEffect(() => {
+    if (isSystemMode && isInitialized) {
+      setIsDarkMode(systemPreference);
+    }
+  }, [systemPreference, isSystemMode, isInitialized]);
+
+  // Apply theme to DOM
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const root = document.documentElement;
+    
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+
+    // Store preference
+    try {
+      localStorage.setItem(SYSTEM_MODE_KEY, JSON.stringify(isSystemMode));
+      if (!isSystemMode) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(isDarkMode));
+      }
+    } catch (error) {
+      console.warn('Failed to save theme preference:', error);
+    }
+  }, [isDarkMode, isSystemMode, isInitialized]);
+
+  const toggleDarkMode = () => {
+    if (isSystemMode) {
+      // If in system mode, switch to manual mode with opposite of current
+      setIsSystemMode(false);
+      setIsDarkMode(!isDarkMode);
+    } else {
+      // If in manual mode, just toggle
+      setIsDarkMode(!isDarkMode);
+    }
+  };
+
+  const setDarkMode = (isDark: boolean) => {
+    setIsSystemMode(false);
+    setIsDarkMode(isDark);
+  };
+
+  const setSystemMode = (useSystem: boolean) => {
+    setIsSystemMode(useSystem);
+    if (useSystem) {
+      setIsDarkMode(systemPreference);
+    }
+  };
+
+  // Prevent flash of incorrect theme
+  if (!isInitialized) {
+    return null;
+  }
+
+  const value: ThemeContextType = {
+    isDarkMode,
+    toggleDarkMode,
+    setDarkMode,
+    systemPreference,
+    isSystemMode,
+    setSystemMode,
+  };
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
 
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
@@ -19,69 +166,4 @@ export const useTheme = (): ThemeContextType => {
   return context;
 };
 
-interface ThemeProviderProps {
-  children: React.ReactNode;
-}
-
-export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Get theme from localStorage or default to system
-    const savedTheme = localStorage.getItem('assistext-theme') as Theme;
-    return savedTheme || 'system';
-  });
-
-  const [isDark, setIsDark] = useState<boolean>(false);
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-    
-    // Remove existing theme classes
-    root.classList.remove('light', 'dark');
-    
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      root.classList.add(systemTheme);
-      setIsDark(systemTheme === 'dark');
-    } else {
-      root.classList.add(theme);
-      setIsDark(theme === 'dark');
-    }
-
-    // Save to localStorage
-    localStorage.setItem('assistext-theme', theme);
-  }, [theme]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    if (theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      
-      const handleChange = (e: MediaQueryListEvent) => {
-        setIsDark(e.matches);
-        const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
-        root.classList.add(e.matches ? 'dark' : 'light');
-      };
-
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    }
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(isDark ? 'light' : 'dark');
-  };
-
-  const value: ThemeContextType = {
-    theme,
-    setTheme,
-    isDark,
-    toggleTheme,
-  };
-
-  return (
-    <ThemeContext.Provider value={value}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
+export default ThemeProvider;

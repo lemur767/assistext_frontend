@@ -1,206 +1,112 @@
-// src/services/clientService.ts
-/**
- * ClientService - Comprehensive client management service
- * Handles all client-related API calls and data management
- * 
- * Features:
- * - Client CRUD operations
- * - Search and filtering
- * - Block/unblock management
- * - Flag management
- * - Regular/VIP client management
- * - Analytics and reporting
- * - Bulk operations
- */
-
+import type { Client, ApiResponse, PaginatedResponse, ClientFilters, ClientStats } from '../types';
 import apiClient from './apiClient';
-import type { 
-  Client, 
-  ClientFilters, 
-  ClientSearchResult, 
-  ClientStats,
-  PaginatedResponse,
-  ApiResponse 
-} from '../types';
+import { API_ENDPOINTS } from '../utils/constants';
 
-// Types for client operations
-export interface ClientCreateData {
-  phone_number: string;
-  name?: string;
-  email?: string;
-  notes?: string;
-  tags?: string[];
-}
-
-export interface ClientUpdateData {
-  name?: string;
-  email?: string;
-  notes?: string;
-  tags?: string[];
-  is_regular?: boolean;
-  is_vip?: boolean;
-}
-
-export interface ClientBlockData {
-  reason?: string;
-  block_until?: string; // ISO date string for temporary blocks
-  notify_user?: boolean;
-}
-
-export interface ClientBulkOperation {
-  client_ids: string[];
-  operation: 'block' | 'unblock' | 'flag' | 'unflag' | 'delete' | 'add_tag' | 'remove_tag';
-  data?: {
-    reason?: string;
-    tag?: string;
-    block_until?: string;
-  };
-}
-
-export interface ClientAnalytics {
-  total_clients: number;
-  active_clients: number;
-  blocked_clients: number;
-  flagged_clients: number;
-  regular_clients: number;
-  vip_clients: number;
-  new_clients_today: number;
-  new_clients_week: number;
-  most_active_clients: Client[];
-  recent_activity: any[];
-}
-
+/**
+ * Client Service - Updated to work without profiles
+ * All clients are now automatically associated with the current user
+ */
 export class ClientService {
-  private static readonly BASE_PATH = '/api/clients';
-
+  
+  // =============================================================================
+  // CLIENT LISTING AND FILTERING
+  // =============================================================================
+  
   /**
-   * Get all clients across all user's profiles
+   * Get all clients for the current user
    */
-  static async getAllClients(
-    page: number = 1,
-    per_page: number = 50,
-    filters?: ClientFilters
-  ): Promise<PaginatedResponse<Client>> {
+  static async getClients(params: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    status?: string;
+    flagged_only?: boolean;
+    favorites_only?: boolean;
+    risk_level?: string;
+    tags?: string;
+    sort_by?: string;
+    sort_order?: string;
+    include_stats?: boolean;
+  } = {}): Promise<{
+    clients: Client[];
+    pagination: {
+      page: number;
+      per_page: number;
+      total: number;
+      pages: number;
+      has_next: boolean;
+      has_prev: boolean;
+    };
+    filters_applied: any;
+  }> {
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: per_page.toString(),
-        ...(filters?.search && { search: filters.search }),
-        ...(filters?.status && { status: filters.status }),
-        ...(filters?.profile_id && { profile_id: filters.profile_id }),
-        ...(filters?.flagged_only && { flagged: 'true' }),
-        ...(filters?.date_from && { date_from: filters.date_from }),
-        ...(filters?.date_to && { date_to: filters.date_to }),
-        ...(filters?.tags && { tags: filters.tags.join(',') }),
+      const searchParams = new URLSearchParams();
+      
+      // Add all parameters to search params
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
       });
-
-      const response = await apiClient.get<PaginatedResponse<Client>>(
-        `${this.BASE_PATH}?${params}`
-      );
+      
+      const url = `${API_ENDPOINTS.clients.list}?${searchParams.toString()}`;
+      const response = await apiClient.get(url);
       return response;
     } catch (error) {
-      console.error('Error fetching all clients:', error);
+      console.error('Error fetching clients:', error);
       throw new Error(`Failed to fetch clients: ${error.message}`);
     }
   }
-
-  /**
-   * Get clients for a specific profile
-   */
-  static async getClients(
-    profileId: string,
-    page: number = 1,
-    per_page: number = 50,
-    filters?: ClientFilters
-  ): Promise<PaginatedResponse<Client>> {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: per_page.toString(),
-        ...(filters?.search && { search: filters.search }),
-        ...(filters?.status && { status: filters.status }),
-        ...(filters?.flagged_only && { flagged: 'true' }),
-        ...(filters?.date_from && { date_from: filters.date_from }),
-        ...(filters?.date_to && { date_to: filters.date_to }),
-        ...(filters?.tags && { tags: filters.tags.join(',') }),
-      });
-
-      const response = await apiClient.get<PaginatedResponse<Client>>(
-        `${this.BASE_PATH}/profiles/${profileId}?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error fetching profile clients:', error);
-      throw new Error(`Failed to fetch clients for profile: ${error.message}`);
-    }
-  }
-
-  /**
-   * Search clients across all profiles
-   */
-  static async searchClients(
-    query: string,
-    page: number = 1,
-    per_page: number = 20
-  ): Promise<ClientSearchResult> {
-    try {
-      if (!query || query.trim().length < 2) {
-        throw new Error('Search query must be at least 2 characters');
-      }
-
-      const params = new URLSearchParams({
-        q: query.trim(),
-        page: page.toString(),
-        per_page: per_page.toString(),
-      });
-
-      const response = await apiClient.get<ClientSearchResult>(
-        `${this.BASE_PATH}/search?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error searching clients:', error);
-      throw new Error(`Search failed: ${error.message}`);
-    }
-  }
-
+  
   /**
    * Get a specific client by ID
    */
-  static async getClient(clientId: string): Promise<Client> {
+  static async getClient(
+    clientId: string,
+    options: {
+      include_stats?: boolean;
+      include_settings?: boolean;
+      include_messages?: boolean;
+      message_limit?: number;
+    } = {}
+  ): Promise<Client> {
     try {
-      const response = await apiClient.get<ApiResponse<Client>>(
-        `${this.BASE_PATH}/${clientId}`
-      );
-      return response.data;
+      const searchParams = new URLSearchParams();
+      Object.entries(options).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+      
+      const url = `${API_ENDPOINTS.clients.get(clientId)}?${searchParams.toString()}`;
+      const response = await apiClient.get<Client>(url);
+      return response;
     } catch (error) {
       console.error('Error fetching client:', error);
       throw new Error(`Failed to fetch client: ${error.message}`);
     }
   }
-
-  /**
-   * Get client by phone number
-   */
-  static async getClientByPhone(phoneNumber: string): Promise<Client> {
-    try {
-      const response = await apiClient.get<ApiResponse<Client>>(
-        `${this.BASE_PATH}/by-phone/${encodeURIComponent(phoneNumber)}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching client by phone:', error);
-      throw new Error(`Failed to fetch client: ${error.message}`);
-    }
-  }
-
+  
+  // =============================================================================
+  // CLIENT CREATION AND UPDATES
+  // =============================================================================
+  
   /**
    * Create a new client
    */
-  static async createClient(clientData: ClientCreateData): Promise<Client> {
+  static async createClient(clientData: {
+    phone_number: string;
+    name?: string;
+    nickname?: string;
+    email?: string;
+    notes?: string;
+    tags?: string[];
+    relationship_status?: string;
+    priority_level?: number;
+  }): Promise<Client> {
     try {
       const response = await apiClient.post<ApiResponse<Client>>(
-        this.BASE_PATH,
+        API_ENDPOINTS.clients.create,
         clientData
       );
       return response.data;
@@ -209,18 +115,30 @@ export class ClientService {
       throw new Error(`Failed to create client: ${error.message}`);
     }
   }
-
+  
   /**
-   * Update client information
+   * Update an existing client
    */
   static async updateClient(
     clientId: string,
-    updateData: ClientUpdateData
+    updates: Partial<{
+      name: string;
+      nickname: string;
+      email: string;
+      notes: string;
+      tags: string[];
+      relationship_status: string;
+      priority_level: number;
+      is_favorite: boolean;
+      custom_ai_personality: string;
+      custom_greeting: string;
+      auto_reply_enabled: boolean;
+    }>
   ): Promise<Client> {
     try {
       const response = await apiClient.put<ApiResponse<Client>>(
-        `${this.BASE_PATH}/${clientId}`,
-        updateData
+        API_ENDPOINTS.clients.update(clientId),
+        updates
       );
       return response.data;
     } catch (error) {
@@ -228,467 +146,321 @@ export class ClientService {
       throw new Error(`Failed to update client: ${error.message}`);
     }
   }
-
+  
   /**
    * Delete a client
    */
-  static async deleteClient(clientId: string): Promise<void> {
+  static async deleteClient(clientId: string): Promise<{ message: string }> {
     try {
-      await apiClient.delete(`${this.BASE_PATH}/${clientId}`);
+      const response = await apiClient.delete<ApiResponse<{ message: string }>>(
+        API_ENDPOINTS.clients.delete(clientId)
+      );
+      return response.data;
     } catch (error) {
       console.error('Error deleting client:', error);
       throw new Error(`Failed to delete client: ${error.message}`);
     }
   }
-
+  
+  // =============================================================================
+  // CLIENT ACTIONS
+  // =============================================================================
+  
   /**
-   * Toggle client block status
+   * Block a client
    */
-  static async toggleBlockClient(
+  static async blockClient(
     clientId: string,
-    shouldBlock: boolean,
-    blockData?: ClientBlockData
-  ): Promise<Client> {
+    reason: string = 'No reason provided'
+  ): Promise<{ message: string; client: Client }> {
     try {
-      const endpoint = shouldBlock 
-        ? `${this.BASE_PATH}/${clientId}/block`
-        : `${this.BASE_PATH}/${clientId}/unblock`;
-
-      const response = await apiClient.post<ApiResponse<Client>>(
-        endpoint,
-        blockData || {}
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error toggling block status:', error);
-      throw new Error(`Failed to ${shouldBlock ? 'block' : 'unblock'} client: ${error.message}`);
-    }
-  }
-
-  /**
-   * Toggle client block status by phone number
-   */
-  static async toggleClientBlock(
-    phoneNumber: string,
-    shouldBlock: boolean,
-    reason?: string
-  ): Promise<Client> {
-    try {
-      const endpoint = shouldBlock 
-        ? `${this.BASE_PATH}/by-phone/${encodeURIComponent(phoneNumber)}/block`
-        : `${this.BASE_PATH}/by-phone/${encodeURIComponent(phoneNumber)}/unblock`;
-
-      const response = await apiClient.post<ApiResponse<Client>>(
-        endpoint,
+      const response = await apiClient.post<ApiResponse<{ message: string; client: Client }>>(
+        API_ENDPOINTS.clients.block(clientId),
         { reason }
       );
       return response.data;
     } catch (error) {
-      console.error('Error toggling block status:', error);
-      throw new Error(`Failed to ${shouldBlock ? 'block' : 'unblock'} client: ${error.message}`);
+      console.error('Error blocking client:', error);
+      throw new Error(`Failed to block client: ${error.message}`);
     }
   }
-
+  
   /**
-   * Toggle client flag status
+   * Unblock a client
    */
-  static async toggleFlagClient(
-    clientId: string,
-    shouldFlag: boolean,
-    reason?: string
-  ): Promise<Client> {
+  static async unblockClient(clientId: string): Promise<{ message: string; client: Client }> {
     try {
-      const endpoint = shouldFlag 
-        ? `${this.BASE_PATH}/${clientId}/flag`
-        : `${this.BASE_PATH}/${clientId}/unflag`;
-
-      const response = await apiClient.post<ApiResponse<Client>>(
-        endpoint,
-        { reason }
+      const response = await apiClient.post<ApiResponse<{ message: string; client: Client }>>(
+        API_ENDPOINTS.clients.unblock(clientId)
       );
       return response.data;
     } catch (error) {
-      console.error('Error toggling flag status:', error);
-      throw new Error(`Failed to ${shouldFlag ? 'flag' : 'unflag'} client: ${error.message}`);
+      console.error('Error unblocking client:', error);
+      throw new Error(`Failed to unblock client: ${error.message}`);
     }
   }
-
+  
   /**
-   * Mark client as regular/not regular
+   * Flag a client
    */
-  static async markClientAsRegular(
-    phoneNumber: string,
-    isRegular: boolean
-  ): Promise<Client> {
+  static async flagClient(
+    clientId: string,
+    reasons: string[]
+  ): Promise<{ message: string; client: Client }> {
     try {
-      const response = await apiClient.post<ApiResponse<Client>>(
-        `${this.BASE_PATH}/by-phone/${encodeURIComponent(phoneNumber)}/regular`,
-        { is_regular: isRegular }
+      const response = await apiClient.post<ApiResponse<{ message: string; client: Client }>>(
+        API_ENDPOINTS.clients.flag(clientId),
+        { reasons }
       );
       return response.data;
     } catch (error) {
-      console.error('Error updating regular status:', error);
-      throw new Error(`Failed to update regular status: ${error.message}`);
+      console.error('Error flagging client:', error);
+      throw new Error(`Failed to flag client: ${error.message}`);
     }
   }
-
+  
   /**
-   * Mark client as VIP/not VIP
+   * Unflag a client
    */
-  static async markClientAsVIP(
-    clientId: string,
-    isVIP: boolean
-  ): Promise<Client> {
+  static async unflagClient(clientId: string): Promise<{ message: string; client: Client }> {
     try {
-      const response = await apiClient.post<ApiResponse<Client>>(
-        `${this.BASE_PATH}/${clientId}/vip`,
-        { is_vip: isVIP }
+      const response = await apiClient.post<ApiResponse<{ message: string; client: Client }>>(
+        API_ENDPOINTS.clients.unflag(clientId)
       );
       return response.data;
     } catch (error) {
-      console.error('Error updating VIP status:', error);
-      throw new Error(`Failed to update VIP status: ${error.message}`);
+      console.error('Error unflagging client:', error);
+      throw new Error(`Failed to unflag client: ${error.message}`);
     }
   }
-
+  
+  // =============================================================================
+  // BULK OPERATIONS
+  // =============================================================================
+  
   /**
-   * Add tags to client
+   * Perform bulk operations on multiple clients
    */
-  static async addClientTags(
-    clientId: string,
-    tags: string[]
-  ): Promise<Client> {
+  static async bulkOperation(data: {
+    client_ids: string[];
+    operation: 'block' | 'unblock' | 'flag' | 'unflag' | 'delete' | 'update_tags';
+    reason?: string;
+    reasons?: string[];
+    tags?: string[];
+  }): Promise<{
+    message: string;
+    results: Array<{
+      client_id: string;
+      status: 'success' | 'error';
+      error?: string;
+    }>;
+    total_processed: number;
+    successful: number;
+    failed: number;
+  }> {
     try {
-      const response = await apiClient.post<ApiResponse<Client>>(
-        `${this.BASE_PATH}/${clientId}/tags`,
-        { tags, action: 'add' }
+      const response = await apiClient.post<ApiResponse<any>>(
+        API_ENDPOINTS.clients.bulk,
+        data
       );
       return response.data;
-    } catch (error) {
-      console.error('Error adding client tags:', error);
-      throw new Error(`Failed to add tags: ${error.message}`);
-    }
-  }
-
-  /**
-   * Remove tags from client
-   */
-  static async removeClientTags(
-    clientId: string,
-    tags: string[]
-  ): Promise<Client> {
-    try {
-      const response = await apiClient.post<ApiResponse<Client>>(
-        `${this.BASE_PATH}/${clientId}/tags`,
-        { tags, action: 'remove' }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error removing client tags:', error);
-      throw new Error(`Failed to remove tags: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get client conversation history
-   */
-  static async getClientConversations(
-    clientId: string,
-    profileId?: string,
-    page: number = 1,
-    per_page: number = 50
-  ): Promise<any> {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: per_page.toString(),
-        ...(profileId && { profile_id: profileId }),
-      });
-
-      const response = await apiClient.get(
-        `${this.BASE_PATH}/${clientId}/conversations?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error fetching client conversations:', error);
-      throw new Error(`Failed to fetch conversations: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get client analytics/statistics
-   */
-  static async getClientStats(
-    profileId?: string,
-    dateRange?: { from: string; to: string }
-  ): Promise<ClientAnalytics> {
-    try {
-      const params = new URLSearchParams({
-        ...(profileId && { profile_id: profileId }),
-        ...(dateRange?.from && { date_from: dateRange.from }),
-        ...(dateRange?.to && { date_to: dateRange.to }),
-      });
-
-      const response = await apiClient.get<ClientAnalytics>(
-        `${this.BASE_PATH}/analytics?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error fetching client analytics:', error);
-      throw new Error(`Failed to fetch analytics: ${error.message}`);
-    }
-  }
-
-  /**
-   * Export clients to CSV
-   */
-  static async exportClients(
-    profileId?: string,
-    filters?: ClientFilters
-  ): Promise<Blob> {
-    try {
-      const params = new URLSearchParams({
-        format: 'csv',
-        ...(profileId && { profile_id: profileId }),
-        ...(filters?.search && { search: filters.search }),
-        ...(filters?.status && { status: filters.status }),
-        ...(filters?.flagged_only && { flagged: 'true' }),
-        ...(filters?.date_from && { date_from: filters.date_from }),
-        ...(filters?.date_to && { date_to: filters.date_to }),
-        ...(filters?.tags && { tags: filters.tags.join(',') }),
-      });
-
-      const response = await fetch(
-        `${apiClient['baseURL']}${this.BASE_PATH}/export?${params}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Export failed: ${response.statusText}`);
-      }
-
-      return await response.blob();
-    } catch (error) {
-      console.error('Error exporting clients:', error);
-      throw new Error(`Failed to export clients: ${error.message}`);
-    }
-  }
-
-  /**
-   * Perform bulk operation on multiple clients
-   */
-  static async bulkOperation(
-    operation: ClientBulkOperation
-  ): Promise<{ success: number; failed: number; errors: string[] }> {
-    try {
-      const response = await apiClient.post<{
-        success: number;
-        failed: number;
-        errors: string[];
-      }>(`${this.BASE_PATH}/bulk`, operation);
-      return response;
     } catch (error) {
       console.error('Error performing bulk operation:', error);
-      throw new Error(`Bulk operation failed: ${error.message}`);
+      throw new Error(`Failed to perform bulk operation: ${error.message}`);
     }
   }
-
+  
+  // =============================================================================
+  // STATISTICS AND ANALYTICS
+  // =============================================================================
+  
   /**
-   * Get blocked clients
+   * Get client statistics
    */
-  static async getBlockedClients(
-    page: number = 1,
-    per_page: number = 50
-  ): Promise<PaginatedResponse<Client>> {
+  static async getClientStats(days: number = 30): Promise<{
+    total_clients: number;
+    new_clients_last_30_days: number;
+    recent_interactions: number;
+    status_breakdown: Record<string, number>;
+    risk_level_breakdown: Record<string, number>;
+    top_clients: Client[];
+    period_days: number;
+  }> {
     try {
-      return await this.getAllClients(page, per_page, { status: 'blocked' });
-    } catch (error) {
-      console.error('Error fetching blocked clients:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get flagged clients
-   */
-  static async getFlaggedClients(
-    page: number = 1,
-    per_page: number = 50
-  ): Promise<PaginatedResponse<Client>> {
-    try {
-      return await this.getAllClients(page, per_page, { flagged_only: true });
-    } catch (error) {
-      console.error('Error fetching flagged clients:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get regular clients
-   */
-  static async getRegularClients(
-    page: number = 1,
-    per_page: number = 50
-  ): Promise<PaginatedResponse<Client>> {
-    try {
-      return await this.getAllClients(page, per_page, { status: 'regular' });
-    } catch (error) {
-      console.error('Error fetching regular clients:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get VIP clients
-   */
-  static async getVIPClients(
-    page: number = 1,
-    per_page: number = 50
-  ): Promise<PaginatedResponse<Client>> {
-    try {
-      return await this.getAllClients(page, per_page, { status: 'vip' });
-    } catch (error) {
-      console.error('Error fetching VIP clients:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check if client exists by phone number
-   */
-  static async clientExists(phoneNumber: string): Promise<boolean> {
-    try {
-      await this.getClientByPhone(phoneNumber);
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Get client message count
-   */
-  static async getClientMessageCount(
-    clientId: string,
-    profileId?: string
-  ): Promise<{ total: number; unread: number }> {
-    try {
-      const params = new URLSearchParams({
-        ...(profileId && { profile_id: profileId }),
-      });
-
-      const response = await apiClient.get<{ total: number; unread: number }>(
-        `${this.BASE_PATH}/${clientId}/message-count?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error fetching message count:', error);
-      throw new Error(`Failed to fetch message count: ${error.message}`);
-    }
-  }
-
-  /**
-   * Get recent client activity
-   */
-  static async getRecentActivity(
-    limit: number = 10,
-    profileId?: string
-  ): Promise<any[]> {
-    try {
-      const params = new URLSearchParams({
-        limit: limit.toString(),
-        ...(profileId && { profile_id: profileId }),
-      });
-
-      const response = await apiClient.get<any[]>(
-        `${this.BASE_PATH}/recent-activity?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error fetching recent activity:', error);
-      throw new Error(`Failed to fetch recent activity: ${error.message}`);
-    }
-  }
-
-  /**
-   * Add client notes
-   */
-  static async addClientNote(
-    clientId: string,
-    note: string
-  ): Promise<Client> {
-    try {
-      const response = await apiClient.post<ApiResponse<Client>>(
-        `${this.BASE_PATH}/${clientId}/notes`,
-        { note }
-      );
+      const url = `${API_ENDPOINTS.clients.stats}?days=${days}`;
+      const response = await apiClient.get<ApiResponse<any>>(url);
       return response.data;
     } catch (error) {
-      console.error('Error adding client note:', error);
-      throw new Error(`Failed to add note: ${error.message}`);
+      console.error('Error fetching client stats:', error);
+      throw new Error(`Failed to fetch client stats: ${error.message}`);
     }
   }
-
+  
+  // =============================================================================
+  // UTILITY METHODS
+  // =============================================================================
+  
   /**
-   * Get client timeline/activity history
+   * Get client display name
    */
-  static async getClientTimeline(
-    clientId: string,
-    page: number = 1,
-    per_page: number = 20
-  ): Promise<any> {
-    try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        per_page: per_page.toString(),
-      });
-
-      const response = await apiClient.get(
-        `${this.BASE_PATH}/${clientId}/timeline?${params}`
-      );
-      return response;
-    } catch (error) {
-      console.error('Error fetching client timeline:', error);
-      throw new Error(`Failed to fetch timeline: ${error.message}`);
+  static getDisplayName(client: Client): string {
+    return client.name || client.nickname || client.phone_number;
+  }
+  
+  /**
+   * Get client's tags as array
+   */
+  static getTags(client: Client): string[] {
+    return client.tags || [];
+  }
+  
+  /**
+   * Check if client is recent contact
+   */
+  static isRecentContact(client: Client, days: number = 7): boolean {
+    if (!client.last_interaction) return false;
+    
+    const lastInteraction = new Date(client.last_interaction);
+    const daysAgo = new Date();
+    daysAgo.setDate(daysAgo.getDate() - days);
+    
+    return lastInteraction >= daysAgo;
+  }
+  
+  /**
+   * Get risk level color
+   */
+  static getRiskLevelColor(riskLevel: string): string {
+    const colors = {
+      low: 'green',
+      medium: 'yellow',
+      high: 'orange',
+      critical: 'red',
+    };
+    return colors[riskLevel] || 'gray';
+  }
+  
+  /**
+   * Get relationship status label
+   */
+  static getRelationshipStatusLabel(status: string): string {
+    const labels = {
+      new: 'New',
+      regular: 'Regular',
+      vip: 'VIP',
+      blocked: 'Blocked',
+    };
+    return labels[status] || status;
+  }
+  
+  /**
+   * Format phone number for display
+   */
+  static formatPhoneNumber(phoneNumber: string): string {
+    // Remove all non-digit characters
+    const cleaned = phoneNumber.replace(/\D/g, '');
+    
+    // Format as (XXX) XXX-XXXX for US numbers
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
     }
+    
+    // Format as +X (XXX) XXX-XXXX for international numbers starting with 1
+    if (cleaned.length === 11 && cleaned.startsWith('1')) {
+      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
+    }
+    
+    // Return as-is for other formats
+    return phoneNumber;
+  }
+  
+  /**
+   * Calculate engagement score color
+   */
+  static getEngagementColor(score: number): string {
+    if (score >= 0.8) return 'green';
+    if (score >= 0.6) return 'blue';
+    if (score >= 0.4) return 'yellow';
+    if (score >= 0.2) return 'orange';
+    return 'red';
+  }
+  
+  /**
+   * Get priority level label
+   */
+  static getPriorityLabel(level: number): string {
+    const labels = {
+      1: 'Low',
+      2: 'Normal',
+      3: 'Medium',
+      4: 'High',
+      5: 'Critical',
+    };
+    return labels[level] || 'Normal';
+  }
+  
+  /**
+   * Search clients locally (for frontend filtering)
+   */
+  static searchClients(clients: Client[], searchTerm: string): Client[] {
+    if (!searchTerm.trim()) return clients;
+    
+    const term = searchTerm.toLowerCase();
+    return clients.filter(client =>
+      client.phone_number.includes(term) ||
+      client.name?.toLowerCase().includes(term) ||
+      client.nickname?.toLowerCase().includes(term) ||
+      client.email?.toLowerCase().includes(term) ||
+      client.notes?.toLowerCase().includes(term) ||
+      client.tags?.some(tag => tag.toLowerCase().includes(term))
+    );
+  }
+  
+  /**
+   * Sort clients by various criteria
+   */
+  static sortClients(clients: Client[], sortBy: string, sortOrder: 'asc' | 'desc' = 'desc'): Client[] {
+    const sorted = [...clients].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = this.getDisplayName(a).toLowerCase();
+          bValue = this.getDisplayName(b).toLowerCase();
+          break;
+        case 'last_interaction':
+          aValue = new Date(a.last_interaction || 0);
+          bValue = new Date(b.last_interaction || 0);
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at || 0);
+          bValue = new Date(b.created_at || 0);
+          break;
+        case 'total_interactions':
+          aValue = a.total_interactions || 0;
+          bValue = b.total_interactions || 0;
+          break;
+        case 'priority_level':
+          aValue = a.priority_level || 1;
+          bValue = b.priority_level || 1;
+          break;
+        case 'engagement_score':
+          aValue = a.engagement_score || 0;
+          bValue = b.engagement_score || 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
   }
 }
 
-// Export individual methods for tree-shaking
-export const {
-  getAllClients,
-  getClients,
-  searchClients,
-  getClient,
-  getClientByPhone,
-  createClient,
-  updateClient,
-  deleteClient,
-  toggleBlockClient,
-  toggleClientBlock,
-  toggleFlagClient,
-  markClientAsRegular,
-  markClientAsVIP,
-  addClientTags,
-  removeClientTags,
-  getClientConversations,
-  getClientStats,
-  exportClients,
-  bulkOperation,
-  getBlockedClients,
-  getFlaggedClients,
-  getRegularClients,
-  getVIPClients,
-  clientExists,
-  getClientMessageCount,
-  getRecentActivity,
-  addClientNote,
-  getClientTimeline,
-} = ClientService;
-
-// Default export
+// Export default instance for convenience
 export default ClientService;
