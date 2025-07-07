@@ -110,7 +110,7 @@ const Register: React.FC = () => {
     
     // Confirm password validation
     if (formData.password !== formData.passwordConfirm) {
-      errors.passwordConfirm= 'Passwords do not match';
+      errors.passwordConfirm = 'Passwords do not match';
     }
     
     // Terms validation
@@ -361,16 +361,16 @@ const Register: React.FC = () => {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
                 <input
                   type="password"
-                  value={formData.confirmPassword}
+                  value={formData.passwordConfirm}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('confirmPassword', e.target.value)}
                   className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
-                    validationErrors.confirmPassword ? 'border-red-500' : ''
+                    validationErrors.passwordConfirm? 'border-red-500' : ''
                   }`}
                   placeholder="••••••••"
                   disabled={localLoading}
                 />
               </div>
-              {validationErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
+              {validationErrors.passwordConfirm && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
             </div>
 
             {/* Terms Agreement */}
