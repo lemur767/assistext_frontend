@@ -11,12 +11,12 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import MessagingInterface from './pages/MessagingInterface';
-import ProfileManagement from './pages/ProfileManagement';
+import ProfileSettings from '../pages/ProfileSettings';
 import Analytics from './pages/Analytics';
-import AISettings from './pages/AISettings';
+xxxxxxxxxx
 import ClientManagement from './pages/ClientManagement';
 import Billing from './pages/Billing';
-import Settings from './pages/Settings';
+
 
 // Layout
 // import AuthLayout from './components/Layout/AuthLayout';
@@ -41,12 +41,12 @@ function App() {
           }>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="messages" element={<MessagingInterface />} />
-            <Route path="profiles" element={<ProfileManagement />} />
+            <Route path="settings" element={<ProfileSettings/>} />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="ai-settings" element={<AISettings />} />
+            
             <Route path="clients" element={<ClientManagement />} />
             <Route path="billing" element={<Billing />} />
-            <Route path="settings" element={<Settings />} />
+            
           </Route>
           
           {/* Redirects */}
