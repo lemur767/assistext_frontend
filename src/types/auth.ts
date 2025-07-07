@@ -5,8 +5,8 @@ export interface User {
   id: number;
   username: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
+  firstName?: string;
+  lastName?: string;
   phone_number?: string;
   is_active: boolean;
   is_admin: boolean;
@@ -32,8 +32,8 @@ export interface RegisterData {
   email: string;
   password: string;
   password_confirm: string;
-  first_name?: string;
-  last_name?: string;
+  firstName?: string;
+  lastName?: string;
   phone_number?: string;
 }
 export interface ResetPasswordData {
