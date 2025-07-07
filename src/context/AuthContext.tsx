@@ -279,11 +279,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'AUTH_START' });
 
     try {
+      // DEBUG: Log what AuthContext receives
+      console.log('🔍 AuthContext received data:', JSON.stringify(data, null, 2));
+      
+      // Send data exactly as received - don't transform field names
       const response = await apiClient.post<{
         user: User;
         access_token: string;
         refresh_token: string;
-      }>('/api/auth/register', data);
+      }>('/api/auth/register', data);  // Pass data as-is
+      
+      // DEBUG: Log response
+      console.log('✅ AuthContext received response:', response);
 
       dispatch({
         type: 'AUTH_SUCCESS',
