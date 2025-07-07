@@ -1,61 +1,112 @@
 export const APP_CONFIG = {
   name: 'AssisText',
   description: 'AI-Powered SMS Response Platform',
-  version: '1.0.0',
+  version: '2.0.0',
   author: 'AssisText Team',
 } as const;
 
+// UPDATED API ENDPOINTS - NO MORE PROFILES!
 export const API_ENDPOINTS = {
   auth: {
     login: '/api/auth/login',
     register: '/api/auth/register',
     refresh: '/api/auth/refresh-token',
     me: '/api/auth/me',
+    logout: '/api/auth/logout',
   },
-  profiles: {
-    list: '/api/profiles',
-    create: '/api/profiles',
-    get: (id: string) => `/api/profiles/${id}`,
-    update: (id: string) => `/api/profiles/${id}`,
-    delete: (id: string) => `/api/profiles/${id}`,
-    toggleAI: (id: string) => `/api/profiles/${id}/toggle_ai`,
+  
+  // USER PROFILE ENDPOINTS (replaces profiles)
+  user: {
+    profile: '/api/user/profile',
+    aiSettings: '/api/user/ai-settings',
+    autoReplySettings: '/api/user/auto-reply-settings',
+    businessHours: '/api/user/business-hours',
+    securitySettings: '/api/user/security-settings',
+    signalwireSettings: '/api/user/signalwire-settings',
+    dashboard: '/api/user/dashboard',
+    changePassword: '/api/user/change-password',
+    deactivate: '/api/user/deactivate',
   },
+  
+  // CLIENT ENDPOINTS (now user-based)
+  clients: {
+    list: '/api/clients',
+    get: (id: string) => `/api/clients/${id}`,
+    create: '/api/clients',
+    update: (id: string) => `/api/clients/${id}`,
+    delete: (id: string) => `/api/clients/${id}`,
+    block: (id: string) => `/api/clients/${id}/block`,
+    unblock: (id: string) => `/api/clients/${id}/unblock`,
+    flag: (id: string) => `/api/clients/${id}/flag`,
+    unflag: (id: string) => `/api/clients/${id}/unflag`,
+    stats: '/api/clients/stats',
+    bulk: '/api/clients/bulk',
+  },
+  
+  // MESSAGE ENDPOINTS (now user-based)
   messages: {
     list: '/api/messages',
+    get: (id: string) => `/api/messages/${id}`,
     send: '/api/messages',
-    conversations: (profileId: string) => `/api/profiles/${profileId}/conversations`,
-    conversation: (id: string) => `/api/conversations/${id}`,
-    markRead: (id: string) => `/api/conversations/${id}/mark-read`,
+    conversations: '/api/messages/conversations',
+    conversation: (phoneNumber: string) => `/api/messages/conversations/${phoneNumber}`,
+    markRead: (id: string) => `/api/messages/${id}/read`,
+    flag: (id: string) => `/api/messages/${id}/flag`,
+    unflag: (id: string) => `/api/messages/${id}/unflag`,
+    templates: '/api/messages/templates',
+    stats: '/api/messages/stats',
   },
-  clients: {
-    list: (profileId: string) => `/api/profiles/${profileId}/clients`,
-    get: (id: string) => `/api/clients/${id}`,
-    update: (id: string) => `/api/clients/${id}`,
-    block: (id: string) => `/api/clients/${id}/block`,
+  
+  // WEBHOOK ENDPOINTS
+  webhooks: {
+    signalwire: '/api/webhooks/signalwire',
+    twilio: '/api/webhooks/twilio',
   },
-  ai: {
-    settings: (profileId: string) => `/api/profiles/${profileId}/ai-settings`,
-    examples: (profileId: string) => `/api/profiles/${profileId}/text-examples`,
-    bulkImport: (profileId: string) => `/api/profiles/${profileId}/bulk-import`,
+  
+  // OPTIONAL ENDPOINTS
+  billing: {
+    subscription: '/api/billing/subscription',
+    plans: '/api/billing/plans',
+    usage: '/api/billing/usage',
+    invoices: '/api/billing/invoices',
   },
+  
   analytics: {
-    dashboard: (profileId: string) => `/api/analytics/dashboard/${profileId}`,
-    messages: (profileId: string) => `/api/analytics/messages/${profileId}`,
-    clients: (profileId: string) => `/api/analytics/clients/${profileId}`,
+    dashboard: '/api/analytics/dashboard',
+    messages: '/api/analytics/messages',
+    clients: '/api/analytics/clients',
   },
 } as const;
 
+// UPDATED QUERY KEYS - NO MORE PROFILES!
 export const QUERY_KEYS = {
+  // User-related queries
   user: ['user'],
-  profiles: ['profiles'],
-  profile: (id: string) => ['profile', id],
-  conversations: (profileId: string) => ['conversations', profileId],
-  conversation: (id: string) => ['conversation', id],
-  clients: (profileId: string) => ['clients', profileId],
-  client: (id: string) => ['client', id],
-  aiSettings: (profileId: string) => ['aiSettings', profileId],
-  dashboard: (profileId: string) => ['dashboard', profileId],
-  analytics: (profileId: string, type: string) => ['analytics', profileId, type],
+  userProfile: ['user', 'profile'],
+  userDashboard: ['user', 'dashboard'],
+  
+  // Settings queries
+  aiSettings: ['user', 'ai-settings'],
+  autoReplySettings: ['user', 'auto-reply-settings'],
+  businessHours: ['user', 'business-hours'],
+  securitySettings: ['user', 'security-settings'],
+  signalwireSettings: ['user', 'signalwire-settings'],
+  
+  // Client queries (no more profile dependency)
+  clients: ['clients'],
+  client: (id: string) => ['clients', id],
+  clientStats: ['clients', 'stats'],
+  
+  // Message queries (no more profile dependency)
+  messages: ['messages'],
+  message: (id: string) => ['messages', id],
+  conversations: ['messages', 'conversations'],
+  conversation: (phoneNumber: string) => ['messages', 'conversations', phoneNumber],
+  messageTemplates: ['messages', 'templates'],
+  messageStats: ['messages', 'stats'],
+  
+  // Analytics queries
+  analytics: (type: string) => ['analytics', type],
 } as const;
 
 export const BREAKPOINTS = {
@@ -81,3 +132,61 @@ export const Z_INDEX = {
   popover: 1050,
   tooltip: 1060,
 } as const;
+
+// STATUS OPTIONS
+export const CLIENT_STATUSES = [
+  { value: 'new', label: 'New' },
+  { value: 'regular', label: 'Regular' },
+  { value: 'vip', label: 'VIP' },
+  { value: 'blocked', label: 'Blocked' },
+] as const;
+
+export const RISK_LEVELS = [
+  { value: 'low', label: 'Low Risk', color: 'green' },
+  { value: 'medium', label: 'Medium Risk', color: 'yellow' },
+  { value: 'high', label: 'High Risk', color: 'orange' },
+  { value: 'critical', label: 'Critical Risk', color: 'red' },
+] as const;
+
+export const AI_RESPONSE_STYLES = [
+  { value: 'professional', label: 'Professional' },
+  { value: 'casual', label: 'Casual' },
+  { value: 'custom', label: 'Custom' },
+] as const;
+
+export const LANGUAGES = [
+  { value: 'en', label: 'English' },
+  { value: 'es', label: 'Spanish' },
+  { value: 'fr', label: 'French' },
+  { value: 'de', label: 'German' },
+] as const;
+
+export const TIMEZONES = [
+  { value: 'UTC', label: 'UTC' },
+  { value: 'America/New_York', label: 'Eastern Time' },
+  { value: 'America/Chicago', label: 'Central Time' },
+  { value: 'America/Denver', label: 'Mountain Time' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time' },
+  { value: 'America/Toronto', label: 'Toronto' },
+  { value: 'America/Vancouver', label: 'Vancouver' },
+] as const;
+
+export const BUSINESS_DAYS = [
+  { value: '1', label: 'Monday' },
+  { value: '2', label: 'Tuesday' },
+  { value: '3', label: 'Wednesday' },
+  { value: '4', label: 'Thursday' },
+  { value: '5', label: 'Friday' },
+  { value: '6', label: 'Saturday' },
+  { value: '7', label: 'Sunday' },
+] as const;
+
+export const MESSAGE_TEMPLATE_CATEGORIES = [
+  { value: 'greeting', label: 'Greetings' },
+  { value: 'booking', label: 'Booking' },
+  { value: 'pricing', label: 'Pricing' },
+  { value: 'availability', label: 'Availability' },
+  { value: 'location', label: 'Location' },
+  { value: 'policies', label: 'Policies' },
+  { value: 'other', label: 'Other' },
+] as const;

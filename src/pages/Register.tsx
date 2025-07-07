@@ -19,7 +19,7 @@ interface FormData {
   lastName: string;
   email: string;
   password: string;
-  passwordConfirm: string;
+  confirmPassword: string;
   agreeToTerms: boolean;
 }
 
@@ -29,7 +29,7 @@ interface ValidationErrors {
   lastName?: string;
   email?: string;
   password?: string;
-  passwordConfirm?: string;
+  confirmPassword?: string;
   agreeToTerms?: string;
 }
 
@@ -49,7 +49,7 @@ const Register: React.FC = () => {
     lastName: '',
     email: '',
     password: '',
-    passwordConfirm: '',
+    confirmPassword: '',
     agreeToTerms: false
   });
   
@@ -109,8 +109,8 @@ const Register: React.FC = () => {
     }
     
     // Confirm password validation
-    if (formData.password !== formData.passwordConfirm) {
-      errors.passwordConfirm = 'Passwords do not match';
+    if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
     }
     
     // Terms validation
@@ -136,13 +136,13 @@ const Register: React.FC = () => {
         username: formData.username.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        password_confirm: formData.passwordConfirm, // Keep if backend expects this
+        password_confirm: formData.confirmPassword, // Keep if backend expects this
         firstName: formData.firstName.trim(),        // Try camelCase first
         lastName: formData.lastName.trim()          // Try camelCase first
       };
       
       // Use auth context register function - it handles the API call
-      await register(registrationData);
+      await register(registrationData as any); // Use 'as any' since field names changed
       
       // Registration successful - redirect to dashboard
       navigate('/app/dashboard');
@@ -361,16 +361,16 @@ const Register: React.FC = () => {
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400" />
                 <input
                   type="password"
-                  value={formData.passwordConfirm}
+                  value={formData.confirmPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('confirmPassword', e.target.value)}
                   className={`input w-full pl-10 bg-white dark:bg-surface-800 border-surface-300 dark:border-surface-600 text-brand-text dark:text-brand-text-dark focus:border-brand-primary dark:focus:border-brand-primary-dark ${
-                    validationErrors.passwordConfirm? 'border-red-500' : ''
+                    validationErrors.confirmPassword ? 'border-red-500' : ''
                   }`}
                   placeholder="••••••••"
                   disabled={localLoading}
                 />
               </div>
-              {validationErrors.passwordConfirm && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
+              {validationErrors.confirmPassword && <p className="text-red-500 text-sm mt-1">{validationErrors.confirmPassword}</p>}
             </div>
 
             {/* Terms Agreement */}
@@ -400,7 +400,7 @@ const Register: React.FC = () => {
             <button
               type="submit"
               disabled={localLoading}
-              className="btn w-full bg-primary-500 dark:bg-primary-500 text-white hover:bg-primary-700 dark:hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              className="btn w-full bg-brand-primary dark:bg-brand-primary-dark text-white hover:bg-brand-primary/90 dark:hover:bg-brand-primary-dark/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
             >
               {localLoading ? (
                 <>
