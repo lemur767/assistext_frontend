@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useWebSocket } from '../hooks/useWebSocket';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useKeyboardShortcut } from '../hooks/useKeyboardShortcut';
-import { messageService } from '../services/messageService';
+import { MessageService } from '../services/messageService';
 import { formatters } from '../utils/formatters';
 import { QUERY_KEYS } from '../utils/constants';
 import type { 
