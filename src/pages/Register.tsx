@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import type { RegisterData } from '../types/auth';
 import { 
   User, 
   Mail, 
