@@ -132,23 +132,23 @@ const Register: React.FC = () => {
     clearError();
     
     try {
-      // Prepare registration data according to your RegisterData type
-      const registrationData: RegisterData = {
+      // Prepare registration data according to your backend API
+      const registrationData = {
         username: formData.username.trim(),
         email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        password_confirm: formData.confirmPassword, // Required by RegisterData interface
-        first_name: formData.firstName.trim(),
-        last_name: formData.lastName.trim()
+        password_confirm: formData.confirmPassword, // Keep if backend expects this
+        firstName: formData.firstName.trim(),        // Try camelCase first
+        lastName: formData.lastName.trim()          // Try camelCase first
       };
       
-      // Use auth context register function
+      // Use auth context register function - it handles the API call
       await register(registrationData);
       
-      // Registration successful - user will be redirected by auth context or Navigate component above
+      // Registration successful - redirect to dashboard
       navigate('/app/dashboard');
       
-    } catch (err) {
+    } catch (err: unknown) {
       // Error is handled by auth context and will be shown via error state
       console.error('Registration failed:', err);
     } finally {

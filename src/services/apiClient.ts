@@ -1,6 +1,6 @@
-// src/services/apiClient.ts - Fixed with proper TypeScript types
+// src/services/apiClient.ts - Clean version without axios type imports
 
-import axios, { AxiosInstance, AxiosResponse, AxiosError, AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -10,11 +10,10 @@ interface ApiResponse<T = any> {
 }
 
 class ApiClient {
-  private client: AxiosInstance;
+  private client: any;
   public baseURL: string;
 
   constructor() {
-    // Use environment variable or fallback to localhost
     this.baseURL = process.env.VITE_APP_API_URL || 'https://backend.assitext.ca';
     
     console.log(`🔗 API Client initialized with baseURL: ${this.baseURL}`);
@@ -29,121 +28,93 @@ class ApiClient {
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
-      (config: AxiosRequestConfig) => {
-        const token = localStorage.getItem('auth_token'); // Consistent token key
+      (config: any) => {
+        const token = localStorage.getItem('auth_token');
         if (token && config.headers) {
           config.headers.Authorization = `Bearer ${token}`;
         }
         
-        console.log(`🔍 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`🔍 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+        }
         return config;
       },
-      (error: AxiosError) => {
-        console.error('🔥 API Request Error:', error);
+      (error: any) => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('🔥 API Request Error:', error);
+        }
         return Promise.reject(error);
       }
     );
 
     // Response interceptor for error handling
     this.client.interceptors.response.use(
-      (response: AxiosResponse) => {
-        console.log(`✅ API Response: ${response.status} ${response.config.url}`);
-        console.log('📄 Response data:', response.data);
+      (response: any) => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`✅ API Response: ${response.status} ${response.config.url}`);
+        }
         
-        // Return the data directly for successful responses
         return response.data;
       },
-      (error: AxiosError) => {
-        console.error('🔥 API Response Error:', error);
+      (error: any) => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error('🔥 API Response Error:', error);
+        }
         
         if (error.response) {
-          // Server responded with error status
           const status = error.response.status;
-          const data = error.response.data as any;
-          
-          console.error(`❌ HTTP ${status}:`, data);
+          const data = error.response.data;
           
           if (status === 401) {
-            // Token expired or invalid - clear all auth data
             localStorage.removeItem('auth_token');
             localStorage.removeItem('refresh_token');
-            // Only redirect if not already on login page
             if (window.location.pathname !== '/login') {
               window.location.href = '/login';
             }
           }
           
-          // Extract error message from response
           const errorMessage = data?.error || data?.message || `HTTP ${status} Error`;
           return Promise.reject(new Error(errorMessage));
           
         } else if (error.request) {
-          // Request was made but no response received
-          console.error('❌ Network Error - No response received:', error.request);
-          return Promise.reject(new Error('Network error - Unable to reach server. Please check your connection and ensure the backend is running.'));
+          return Promise.reject(new Error('Network error - Unable to reach server. Please check your connection.'));
           
         } else {
-          // Something else happened
-          console.error('❌ Request Error:', error.message);
           return Promise.reject(new Error(`Request failed: ${error.message}`));
         }
       }
     );
   }
 
-  /**
-   * Set authentication token
-   */
   setToken(token: string): void {
-    localStorage.setItem('auth_token', token); // Consistent token key
+    localStorage.setItem('auth_token', token);
   }
 
-  /**
-   * Remove authentication tokens
-   */
   removeToken(): void {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('refresh_token');
   }
 
-  /**
-   * GET request
-   */
-  async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.client.get(url, config);
+  async get<T = any>(url: string): Promise<T> {
+    return this.client.get(url);
   }
 
-  /**
-   * POST request
-   */
-  async post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return this.client.post(url, data, config);
+  async post<T = any>(url: string, data?: any): Promise<T> {
+    return this.client.post(url, data);
   }
 
-  /**
-   * PUT request
-   */
-  async put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return this.client.put(url, data, config);
+  async put<T = any>(url: string, data?: any): Promise<T> {
+    return this.client.put(url, data);
   }
 
-  /**
-   * DELETE request
-   */
-  async delete<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.client.delete(url, config);
+  async delete<T = any>(url: string): Promise<T> {
+    return this.client.delete(url);
   }
 
-  /**
-   * PATCH request
-   */
-  async patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {
-    return this.client.patch(url, data, config);
+  async patch<T = any>(url: string, data?: any): Promise<T> {
+    return this.client.patch(url, data);
   }
 
-  /**
-   * Test connection to backend
-   */
   async testConnection(): Promise<boolean> {
     try {
       await this.client.get('/api/health');
@@ -154,9 +125,6 @@ class ApiClient {
     }
   }
 
-  /**
-   * Get backend debug info
-   */
   async getDebugInfo(): Promise<any> {
     try {
       return await this.client.get('/api/health');
