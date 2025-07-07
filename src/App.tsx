@@ -29,7 +29,7 @@ import Billing from './pages/Billing';
 import ProfileSettings from './pages/ProfileSettings';
 
 // UI Components
-import { useNotifications } from './components/ui';
+import { useNotifications } from './hooks/useNotification';
 
 // Styles
 import './styles/globals.css';
