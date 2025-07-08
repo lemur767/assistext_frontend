@@ -14,7 +14,7 @@ class ApiClient {
   public baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.VITE_APP_API_URL || 'https://backend.assitext.ca';
+    this.baseURL = import.meta.env.VITE_APP_API_URL || 'https://backend.assitext.ca';
     
     console.log(`🔗 API Client initialized with baseURL: ${this.baseURL}`);
     
