@@ -1,7 +1,9 @@
+// src/App.tsx - Fixed with proper theme integration
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Toaster } from 'react-hot-toast';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -24,32 +26,17 @@ import MessagingInterface from './pages/MessagingInterface';
 import Analytics from './pages/Analytics';
 import ClientManagement from './pages/ClientManagement';
 import Billing from './pages/Billing';
-
-// Updated Profile Settings (replaces ProfileManagement)
 import ProfileSettings from './pages/ProfileSettings';
-
-// UI Components
-import { useNotifications } from './hooks/useNotification';
 
 // Styles
 import './styles/globals.css';
 
-// Create React Query client
+// Create query client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
-      retry: (failureCount, error: any) => {
-        // Don't retry on 401/403 errors
-        if (error?.response?.status === 401 || error?.response?.status === 403) {
-          return false;
-        }
-        return failureCount < 3;
-      },
-    },
-    mutations: {
       retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -68,20 +55,16 @@ function App() {
 }
 
 function AppContent() {
-  const { addNotification } = useNotifications();
-
   return (
     <Router>
-      <div className="min-h-screen bg-brand-bg dark:bg-brand-bg-dark transition-colors duration-300">
+      <div className="min-h-screen surface-bg transition-colors duration-300">
         <Routes>
           {/* Public Routes */}
           <Route
             path="/"
             element={
               <PublicRouteWrapper>
-                <AuthLayout>
-                  <LandingPage />
-                </AuthLayout>
+                <LandingPage />
               </PublicRouteWrapper>
             }
           />
@@ -145,6 +128,13 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
+        {/* Global Toast Notifications */}
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+          }}
+        />
       </div>
     </Router>
   );

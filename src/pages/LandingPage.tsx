@@ -1,121 +1,72 @@
-// src/pages/LandingPage.tsx - Beautiful modern landing page
+// src/pages/LandingPage.tsx - Fixed and complete landing page
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
-
+import { ArrowRight, MessageSquare, Shield, Brain, Zap, CheckCircle, Star } from 'lucide-react';
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Navigation Header */}
-      <header className="relative z-50">
-        <nav className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">A</span>
-              </div>
-              <div className="text-2xl font-bold text-gradient">AssisText</div>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="nav-link">Features</a>
-              <a href="#pricing" className="nav-link">Pricing</a>
-              <a href="#about" className="nav-link">About</a>
-              <a href="#contact" className="nav-link">Contact</a>
-            </div>
-
-            {/* Auth Buttons */}
-            <div className="flex items-center space-x-4">
-              <Link to="/login" className="btn btn-ghost hidden sm:inline-flex">
-                Sign In
-              </Link>
-              <Link to="/register" className="btn btn-primary">
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </nav>
-      </header>
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Pattern */}
-        <div className="absolute inset-0 bg-grid opacity-30"></div>
+        <div className="absolute inset-0 bg-grid opacity-20"></div>
         
         {/* Gradient Orbs */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-gradient-to-r from-accent-400 to-accent-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
         
         <div className="relative container mx-auto px-6 pt-20 pb-32">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Hero Badge */}
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-primary-200 text-primary-700 text-sm font-medium mb-8 animate-fade-in">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-              Now powered by SignalWire for reliable messaging
+            <div className="mb-8">
+              <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/20">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  🇨🇦 Proudly Canadian • PIPEDA Compliant
+                </span>
+              </div>
             </div>
-
-            {/* Hero Title */}
-            <h1 className="text-hero mb-8 animate-slide-up">
-              <span className="text-slate-900 text-lg sm:text-md">AI-Powered</span>
+            
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+              <span className="text-slate-900 dark:text-white">AI-Powered</span>
               <br />
-              <span className="text-gradient text-xxl">SMS Assistant</span>
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                SMS Assistant
+              </span>
             </h1>
-
-            {/* Hero Subtitle */}
-            <p className="text-subtitle max-w-2xl mx-auto mb-12 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              Automate your SMS responses with intelligent AI that learns your unique communication style. 
-              Perfect for professionals, businesses, and anyone who wants to stay connected 24/7.
+            
+            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Transform your business communications with intelligent SMS automation. 
+              Never miss a message, always respond professionally, available 24/7.
             </p>
-
-            {/* Hero CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 animate-slide-up" style={{ animationDelay: '0.4s' }}>
-              <Link to="/register" className="btn btn-primary btn-lg group">
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+              <Link 
+                to="/register" 
+                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-2xl"
+              >
                 Start Free Trial
-                <svg className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
+                <ArrowRight className="w-5 h-5 ml-2 inline-block group-hover:translate-x-1 transition-transform" />
               </Link>
-              <Link to="/login" className="btn btn-outline btn-lg">
+              <Link 
+                to="/login" 
+                className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg hover:bg-white dark:hover:bg-slate-700 transition-all duration-200 border border-white/20"
+              >
                 Sign In
               </Link>
             </div>
-
-            {/* Social Proof */}
-            <div className="flex items-center justify-center space-x-8 text-sm text-secondary-500 animate-slide-up" style={{ animationDelay: '0.6s' }}>
-              <div className="flex items-center">
-                <span className="text-green-500 mr-1">✓</span>
-                No credit card required
+            
+            <div className="flex items-center justify-center space-x-8 text-sm text-slate-600 dark:text-slate-400">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Free 14-day trial</span>
               </div>
-              <div className="flex items-center">
-                <span className="text-green-500 mr-1">✓</span>
-                7-day free trial
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>No credit card required</span>
               </div>
-              <div className="flex items-center">
-                <span className="text-green-500 mr-1">✓</span>
-                Cancel anytime
-              </div>
-            </div>
-          </div>
-
-          {/* Hero Dashboard Preview */}
-          <div className="relative max-w-5xl mx-auto mt-20 animate-slide-up" style={{ animationDelay: '0.8s' }}>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white/10 backdrop-blur-sm border border-white/20">
-              <div className="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                  <div className="ml-4 text-white text-sm font-medium">AssisText Dashboard</div>
-                </div>
-              </div>
-              <div className="p-8 bg-gradient-to-br from-white to-slate-50">
-                <div className="text-center text-secondary-600">
-                  <div className="text-6xl mb-4">📱</div>
-                  <p className="text-lg">Beautiful dashboard preview coming soon...</p>
-                </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="w-5 h-5 text-green-500" />
+                <span>Cancel anytime</span>
               </div>
             </div>
           </div>
@@ -123,210 +74,241 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="section bg-white">
+      <section id="features" className="py-24 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold py-10 text-slate-900 mb-4">
-              Everything you need to automate SMS
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+              Why Choose AssisText?
             </h2>
-            <p className="text-subtitle max-w-2xl mx-auto">
-              Powered by SignalWire for reliable messaging and advanced AI for intelligent responses.
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
+              Built specifically for Canadian businesses who value privacy, security, and intelligent automation.
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature 1 */}
-            <div className="card group hover:scale-105 transition-all duration-300">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-float">
-                  <span className="text-2xl">🤖</span>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                icon: Brain,
+                title: 'AI-Powered Intelligence',
+                description: 'Advanced AI learns your communication style and responds naturally to customers.',
+                color: 'from-blue-500 to-indigo-500'
+              },
+              {
+                icon: Shield,
+                title: 'Privacy & Security',
+                description: 'Canadian-hosted with enterprise-grade encryption. PIPEDA compliant by design.',
+                color: 'from-green-500 to-emerald-500'
+              },
+              {
+                icon: Zap,
+                title: '24/7 Availability',
+                description: 'Never miss a message again. Instant responses with customizable business hours.',
+                color: 'from-orange-500 to-red-500'
+              }
+            ].map((feature, index) => (
+              <div key={index} className="group p-8 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 hover:scale-105 transition-all duration-300">
+                <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <feature.icon className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">AI-Powered Responses</h3>
-                <p className="text-secondary-600 leading-relaxed">
-                  Train AI to respond in your unique style and personality. Smart context understanding for natural conversations.
-                </p>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{feature.title}</h3>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{feature.description}</p>
               </div>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="card group hover:scale-105 transition-all duration-300">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-float">
-                  <span className="text-2xl">📱</span>
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">SignalWire Integration</h3>
-                <p className="text-secondary-600 leading-relaxed">
-                  Enterprise-grade SMS delivery with Canadian phone numbers. 99.9% uptime and instant message delivery.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="card group hover:scale-105 transition-all duration-300">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-float">
-                  <span className="text-2xl">📊</span>
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">Analytics Dashboard</h3>
-                <p className="text-secondary-600 leading-relaxed">
-                  Track message volume, response rates, and client engagement. Real-time insights to optimize your communication.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="card group hover:scale-105 transition-all duration-300">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-float">
-                  <span className="text-2xl">🔒</span>
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">Secure & Private</h3>
-                <p className="text-secondary-600 leading-relaxed">
-                  End-to-end encryption and PIPEDA compliance. Your data stays private and secure at all times.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="card group hover:scale-105 transition-all duration-300">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-float">
-                  <span className="text-2xl">⚡</span>
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">Lightning Fast</h3>
-                <p className="text-secondary-600 leading-relaxed">
-                  Instant AI responses within seconds. Smart caching and optimized infrastructure for maximum speed.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="card group hover:scale-105 transition-all duration-300">
-              <div className="card-body text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:animate-float">
-                  <span className="text-2xl">🇨🇦</span>
-                </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-3">Made in Canada</h3>
-                <p className="text-secondary-600 leading-relaxed">
-                  Built with Canadian privacy standards. Local support and Canadian phone numbers available.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="section bg-gradient-to-br from-slate-50 to-blue-50">
+      <section id="pricing" className="py-24">
         <div className="container mx-auto px-6">
-          <div className="text-center mt-9 mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-              Simple, transparent pricing
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+              Simple, Transparent Pricing
             </h2>
-            <p className="text-subtitle">
-              Start free, upgrade as you grow. No hidden fees or surprise charges.
+            <p className="text-xl text-slate-600 dark:text-slate-300">
+              Choose the plan that fits your business needs. All plans include our core AI features.
             </p>
           </div>
-
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Free Plan */}
-              <div className="card mb-16">
-                <div className="card-body">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Free Trial</h3>
-                    <div className="text-4xl font-bold text-slate-900 mb-2">$0</div>
-                    <p className="text-secondary-600">7 days, no credit card required</p>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                name: 'Starter',
+                price: '$29',
+                period: '/month',
+                description: 'Perfect for small businesses',
+                features: ['500 SMS messages', 'Basic AI responses', 'Email support', '1 phone number'],
+                highlighted: false
+              },
+              {
+                name: 'Professional',
+                price: '$49',
+                period: '/month',
+                description: 'Most popular for growing businesses',
+                features: ['2,000 SMS messages', 'Advanced AI training', 'Priority support', '3 phone numbers', 'Analytics dashboard'],
+                highlighted: true
+              },
+              {
+                name: 'Enterprise',
+                price: '$99',
+                period: '/month',
+                description: 'For large organizations',
+                features: ['10,000 SMS messages', 'Custom AI training', '24/7 phone support', 'Unlimited numbers', 'Advanced analytics', 'API access'],
+                highlighted: false
+              }
+            ].map((plan, index) => (
+              <div 
+                key={index} 
+                className={`relative p-8 rounded-3xl shadow-xl border transition-all duration-300 hover:scale-105 ${
+                  plan.highlighted 
+                    ? 'bg-gradient-to-b from-blue-600 to-indigo-600 text-white border-blue-500 scale-105' 
+                    : 'bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-white/20 text-slate-900 dark:text-white'
+                }`}
+              >
+                {plan.highlighted && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-gradient-to-r from-orange-400 to-pink-400 text-white px-4 py-2 rounded-full text-sm font-semibold">
+                      Most Popular
+                    </div>
                   </div>
-                  
-                  <ul className="space-y-4 mb-8">
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>100 AI responses</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>1 profile</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>Basic analytics</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>Email support</span>
-                    </li>
-                  </ul>
-                  
-                  <Link to="/register" className="btn btn-outline w-full">
-                    Start Free Trial
-                  </Link>
-                </div>
-              </div>
-
-              {/* Pro Plan */}
-              <div className="card relative border-primary-200 mb-16 shadow-glow">
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-4 py-1 rounded-full text-sm font-medium">
-                    Most Popular
-                  </span>
+                )}
+                
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <p className={`text-sm ${plan.highlighted ? 'text-blue-100' : 'text-slate-600 dark:text-slate-400'} mb-4`}>
+                    {plan.description}
+                  </p>
+                  <div className="flex items-end justify-center">
+                    <span className="text-5xl font-bold">{plan.price}</span>
+                    <span className={`text-lg ${plan.highlighted ? 'text-blue-100' : 'text-slate-600 dark:text-slate-400'} ml-1`}>
+                      {plan.period}
+                    </span>
+                  </div>
                 </div>
                 
-                <div className="card-body">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Professional</h3>
-                    <div className="text-4xl font-bold text-slate-900 mb-2">$29</div>
-                    <p className="text-secondary-600">per month</p>
-                  </div>
-                  
-                  <ul className="space-y-4 mb-8">
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>1,000 AI responses/month</span>
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center">
+                      <CheckCircle className={`w-5 h-5 mr-3 ${plan.highlighted ? 'text-blue-200' : 'text-green-500'}`} />
+                      <span>{feature}</span>
                     </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>Multiple profiles</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>Advanced analytics</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>Priority support</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs mr-3">✓</span>
-                      <span>Custom AI training</span>
-                    </li>
-                  </ul>
-                  
-                  <Link to="/register" className="btn btn-primary w-full">
-                    Get Started
-                  </Link>
+                  ))}
+                </ul>
+                
+                <Link
+                  to="/register"
+                  className={`block w-full py-4 text-center font-semibold rounded-2xl transition-all duration-200 ${
+                    plan.highlighted
+                      ? 'bg-white text-blue-600 hover:bg-blue-50'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
+                  }`}
+                >
+                  Get Started
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
+              Trusted by Canadian Businesses
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {[
+              {
+                name: 'Sarah Chen',
+                role: 'Restaurant Owner',
+                company: 'Toronto',
+                content: 'AssisText has revolutionized how we handle reservations. Our AI assistant handles 80% of inquiries automatically.',
+                rating: 5
+              },
+              {
+                name: 'Michael Dubois',
+                role: 'Real Estate Agent',
+                company: 'Montreal',
+                content: 'Never miss a lead again. The AI responds to property inquiries instantly, even when I\'m showing other homes.',
+                rating: 5
+              },
+              {
+                name: 'Jennifer Smith',
+                role: 'Clinic Manager',
+                company: 'Vancouver',
+                content: 'Perfect for appointment confirmations and patient communication. PIPEDA compliance was essential for us.',
+                rating: 5
+              }
+            ].map((testimonial, index) => (
+              <div key={index} className="p-8 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20">
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-slate-600 dark:text-slate-300 mb-6 italic">"{testimonial.content}"</p>
+                <div>
+                  <div className="font-semibold text-slate-900 dark:text-white">{testimonial.name}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400">{testimonial.role}, {testimonial.company}</div>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-6 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-8">
+              Ready to Transform Your Business Communications?
+            </h2>
+            <p className="text-xl text-slate-600 dark:text-slate-300 mb-12">
+              Join thousands of Canadian businesses using AI to respond faster, smarter, and more efficiently.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
+              <Link 
+                to="/register" 
+                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-2xl"
+              >
+                Start Your Free Trial
+                <ArrowRight className="w-5 h-5 ml-2 inline-block group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <Link 
+                to="/login" 
+                className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg hover:bg-white dark:hover:bg-slate-700 transition-all duration-200 border border-white/20"
+              >
+                Sign In
+              </Link>
             </div>
+            
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              No setup fees • Cancel anytime • Canadian hosted & compliant
+            </p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white section">
+      <footer className="bg-slate-900 text-white py-16">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            {/* Company Info */}
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">A</span>
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Company */}
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-white" />
                 </div>
-                <div className="text-2xl font-bold">AssisText</div>
+                <span className="text-xl font-bold">AssisText</span>
               </div>
-              <p className="text-slate-400 mb-6 max-w-md">
-                AI-powered SMS automation that learns your communication style. 
-                Built in Canada with privacy and security in mind.
+              <p className="text-slate-400 mb-4">
+                AI-powered SMS management built in Canada with privacy and security in mind.
               </p>
               <div className="flex space-x-4">
                 <a href="#" className="w-10 h-10 bg-slate-800 rounded-lg flex items-center justify-center hover:bg-slate-700 transition-colors">
@@ -360,6 +342,17 @@ const LandingPage: React.FC = () => {
                 <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-slate-400">
+                <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">PIPEDA Compliance</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
               </ul>
             </div>
           </div>
