@@ -7,7 +7,7 @@ import { MessageService } from '../services/messageService';
 import { formatters } from '../utils/formatters';
 import { QUERY_KEYS } from '../utils/constants';
 import type { 
-  Profile, 
+  User, 
   Conversation, 
   Message, 
   Client,
@@ -15,11 +15,11 @@ import type {
 } from '../types';
 
 interface MessagingInterfaceProps extends BaseComponentProps {
-  profileId: string;
+  user_id: string;
 }
 
 export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({ 
-  profileId, 
+  user_id,
   className = '' 
 }) => {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
@@ -30,12 +30,12 @@ export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({
   const queryClient = useQueryClient();
 
   // WebSocket connection for real-time messages
-  const { messages, sendMessage, isConnected } = useWebSocket(profileId);
+  const { messages, sendMessage, isConnected } = useWebSocket(user_id);
 
   // Fetch conversations
   const { data: conversations = [] } = useQuery({
-    queryKey: QUERY_KEYS.conversations(profileId),
-    queryFn: () => messageService.getConversations(profileId),
+    queryKey: QUERY_KEYS.conversations(),
+    queryFn: () => messageService.getConversations(user_id),
     refetchInterval: 30000,
   });
 
@@ -84,7 +84,7 @@ export const MessagingInterface: React.FC<MessagingInterfaceProps> = ({
       {/* Chat Panel */}
       <ChatPanel
         conversationId={selectedConversationId}
-        profileId={profileId}
+        user_id={user_id}
         isConnected={isConnected}
         onOpenConversations={() => setIsMobileConversationsOpen(true)}
         isMobile={isMobile}
@@ -238,7 +238,7 @@ const ConversationItem: React.FC<ConversationItemProps> = ({
 // Chat Panel Component
 interface ChatPanelProps {
   conversationId: string | null;
-  profileId: string;
+  user_id: number;
   isConnected: boolean;
   onOpenConversations: () => void;
   isMobile: boolean;
@@ -246,7 +246,7 @@ interface ChatPanelProps {
 
 const ChatPanel: React.FC<ChatPanelProps> = ({
   conversationId,
-  profileId,
+  user_id,
   isConnected,
   onOpenConversations,
   isMobile,
@@ -259,13 +259,13 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   // Fetch conversation details
   const { data: conversation } = useQuery({
     queryKey: QUERY_KEYS.conversation(conversationId || ''),
-    queryFn: () => messageService.getConversation(conversationId!),
+    queryFn: () => MessageService.getConversations(client),
     enabled: !!conversationId,
   });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: messageService.sendMessage,
+    mutationFn: MessageService.sendMessage,
     onSuccess: () => {
       setMessageText('');
       scrollToBottom();

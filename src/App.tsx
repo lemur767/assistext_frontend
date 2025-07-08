@@ -1,5 +1,4 @@
-// src/App.tsx - Fixed with proper theme integration
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -22,7 +21,7 @@ import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import MessagingInterface from './pages/MessagingInterface';
+// import MessagingInterface from './pages/MessagingInterface';
 import Analytics from './pages/Analytics';
 import ClientManagement from './pages/ClientManagement';
 import Billing from './pages/Billing';
@@ -93,7 +92,7 @@ function AppContent() {
 
           {/* Protected App Routes */}
           <Route
-            path="/app"
+            path="/app/*"
             element={
               <ProtectedRoute>
                 <AppLayout />
@@ -102,7 +101,7 @@ function AppContent() {
           >
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="messages" element={<MessagingInterface />} />
+           {/* <Route path="messages" element={<MessagingInterface />} /> */}
             <Route path="analytics" element={<Analytics />} />
             <Route path="clients" element={<ClientManagement />} />
             <Route path="billing" element={<Billing />} />

@@ -3,7 +3,11 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { MessageSquare, Shield, Brain, Zap } from 'lucide-react';
 
-const AuthLayout: React.FC = () => {
+interface AuthLayoutProps {
+  children?: React.ReactNode;
+}
+
+const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
 
@@ -129,6 +133,7 @@ const AuthLayout: React.FC = () => {
         {/* Right Side - Content */}
         <div className={`flex-1 ${isLandingPage ? 'w-full' : 'lg:w-1/2 xl:w-2/5'} flex flex-col justify-center ${isLandingPage ? 'p-8 lg:p-16' : 'p-8'}`}>
           <div className={`w-full ${isLandingPage ? 'max-w-6xl' : 'max-w-md'} mx-auto`}>
+          
             {/* Mobile Logo - Only show for auth pages */}
             {!isLandingPage && (
               <div className="lg:hidden flex items-center justify-center space-x-3 mb-8">
@@ -144,7 +149,7 @@ const AuthLayout: React.FC = () => {
               <Outlet />
             ) : (
               <div className="surface-card rounded-2xl shadow-xl border border-brand p-8">
-                <Outlet />
+                {children}
               </div>
             )}
             
