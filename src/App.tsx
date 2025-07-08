@@ -68,7 +68,7 @@ function App() {
 }
 
 function AppContent() {
-  const { NotificationContainer } = useNotifications();
+  const { addNotification } = useNotifications();
 
   return (
     <Router>
@@ -145,8 +145,6 @@ function AppContent() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
-        {/* Global Notification Container */}
-        <NotificationContainer />
       </div>
     </Router>
   );
