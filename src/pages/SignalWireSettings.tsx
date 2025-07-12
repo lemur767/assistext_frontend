@@ -137,7 +137,7 @@ const SignalWireSettings: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.subaccount) {
+        if (data.success && data.subaccount) {
           setSubAccount(data.subaccount);
           setCurrentStep('complete');
           
@@ -173,7 +173,8 @@ const SignalWireSettings: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to search numbers');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to search numbers');
       }
 
       const data = await response.json();
@@ -187,6 +188,7 @@ const SignalWireSettings: React.FC = () => {
         throw new Error(data.error || 'Search failed');
       }
     } catch (error) {
+      console.error('Number search error:', error);
       toast.error(error.message || 'Failed to search numbers');
     } finally {
       setIsLoading(false);
@@ -217,7 +219,8 @@ const SignalWireSettings: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to purchase number');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to purchase number');
       }
 
       const data = await response.json();
@@ -231,6 +234,7 @@ const SignalWireSettings: React.FC = () => {
         throw new Error(data.error || 'Purchase failed');
       }
     } catch (error) {
+      console.error('Number purchase error:', error);
       toast.error(error.message || 'Failed to purchase number');
       setCurrentStep('select');
     } finally {
@@ -256,7 +260,8 @@ const SignalWireSettings: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Webhook test failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Webhook test failed');
       }
 
       const data = await response.json();
@@ -265,11 +270,12 @@ const SignalWireSettings: React.FC = () => {
         toast.success('Webhook test successful!');
         setWebhookStatus('configured');
       } else {
-        toast.error('Webhook test failed');
+        toast.error(data.error || 'Webhook test failed');
         setWebhookStatus('error');
       }
     } catch (error) {
-      toast.error('Webhook test failed');
+      console.error('Webhook test error:', error);
+      toast.error(error.message || 'Webhook test failed');
       setWebhookStatus('error');
     } finally {
       setIsLoading(false);
