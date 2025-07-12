@@ -1,388 +1,378 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { 
   MessageSquare, 
   Users, 
-  Brain, 
-  Settings, 
   TrendingUp, 
-  Phone, 
-  Clock, 
-  AlertCircle, 
+  Zap,
+  Brain,
+  Phone,
+  Clock,
+  BarChart3,
+  Activity,
+  ArrowUpRight,
+  ArrowDownRight,
+  AlertTriangle,
   CheckCircle,
-  PlusCircle,
-  MoreVertical,
-  Search,
-  Filter,
-  Bell,
-  User,
-  LogOut,
-  Zap
+  Calendar,
+  Settings
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [profiles, setProfiles] = useState([
-    {
-      id: 1,
-      name: "Sarah Wilson",
-      phone: "+1 (555) 123-4567",
-      isActive: true,
-      aiEnabled: true,
-      unreadMessages: 3,
-      totalMessages: 47,
-      responseRate: 98,
-      lastActivity: "2 mins ago"
-    },
-    {
-      id: 2,
-      name: "Emma Davis",
-      phone: "+1 (555) 987-6543",
-      isActive: false,
-      aiEnabled: false,
-      unreadMessages: 0,
-      totalMessages: 23,
-      responseRate: 95,
-      lastActivity: "1 hour ago"
-    }
-  ]);
+interface DashboardStats {
+  totalMessages: number;
+  activeClients: number;
+  responseRate: number;
+  aiEfficiency: number;
+  messagesChange: number;
+  clientsChange: number;
+  responseRateChange: number;
+  efficiencyChange: number;
+}
 
-  const [conversations, setConversations] = useState([
-    {
-      id: 1,
-      clientName: "John D.",
-      clientNumber: "+1 (555) 234-5678",
-      lastMessage: "Are you available tonight?",
-      timestamp: "2 mins ago",
-      isUnread: true,
-      profileId: 1,
-      isAiResponded: false
-    },
-    {
-      id: 2,
-      clientName: "Mike R.",
-      clientNumber: "+1 (555) 345-6789",
-      lastMessage: "Thanks for the quick response!",
-      timestamp: "15 mins ago",
-      isUnread: false,
-      profileId: 1,
-      isAiResponded: true
-    }
-  ]);
+interface RecentActivity {
+  id: string;
+  type: 'message' | 'client' | 'ai' | 'system';
+  title: string;
+  description: string;
+  timestamp: Date;
+  status: 'success' | 'warning' | 'error' | 'info';
+}
 
-  const stats = {
-    totalMessages: 156,
-    aiResponses: 89,
-    responseRate: 97,
-    avgResponseTime: "2.3 mins"
+const Dashboard: React.FC = () => {
+  const { user } = useAuth();
+  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('7d');
+
+  // Mock data - replace with actual API calls
+  const stats: DashboardStats = {
+    totalMessages: 1247,
+    activeClients: 89,
+    responseRate: 94.2,
+    aiEfficiency: 87.5,
+    messagesChange: 12.5,
+    clientsChange: 8.3,
+    responseRateChange: 2.1,
+    efficiencyChange: -1.2,
   };
 
-  const StatCard = ({ icon: Icon, title, value, trend, color = "blue" }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-500 text-sm font-medium">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          {trend && (
-            <p className={`text-sm mt-1 ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {trend > 0 ? '+' : ''}{trend}% from last week
+  const recentActivity: RecentActivity[] = [
+    {
+      id: '1',
+      type: 'message',
+      title: 'New message from Sarah Johnson',
+      description: 'AI responded automatically within 2 seconds',
+      timestamp: new Date(Date.now() - 5 * 60 * 1000),
+      status: 'success'
+    },
+    {
+      id: '2',
+      type: 'client',
+      title: 'New client added',
+      description: 'Mike Chen added to your contact list',
+      timestamp: new Date(Date.now() - 15 * 60 * 1000),
+      status: 'info'
+    },
+    {
+      id: '3',
+      type: 'ai',
+      title: 'AI model updated',
+      description: 'Performance improvements deployed',
+      timestamp: new Date(Date.now() - 30 * 60 * 1000),
+      status: 'success'
+    },
+    {
+      id: '4',
+      type: 'system',
+      title: 'SignalWire connection verified',
+      description: 'All systems operational',
+      timestamp: new Date(Date.now() - 45 * 60 * 1000),
+      status: 'success'
+    }
+  ];
+
+  const StatCard: React.FC<{
+    title: string;
+    value: string | number;
+    change: number;
+    icon: React.ElementType;
+    suffix?: string;
+  }> = ({ title, value, change, icon: Icon, suffix = '' }) => {
+    const isPositive = change > 0;
+    const isNeutral = change === 0;
+    
+    return (
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-all duration-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+              {title}
             </p>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg bg-${color}-50`}>
-          <Icon className={`h-6 w-6 text-${color}-600`} />
-        </div>
-      </div>
-    </div>
-  );
-
-  const ProfileCard = ({ profile }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className="h-12 w-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <User className="h-6 w-6 text-white" />
+            <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              {value}{suffix}
+            </p>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{profile.name}</h3>
-            <p className="text-sm text-gray-500">{profile.phone}</p>
+          <div className="w-12 h-12 bg-gradient-to-br from-brand-primary to-brand-accent rounded-lg flex items-center justify-center">
+            <Icon className="w-6 h-6 text-white" />
           </div>
         </div>
-        <div className="flex items-center space-x-2">
-          <div className={`h-3 w-3 rounded-full ${profile.isActive ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-          <MoreVertical className="h-4 w-4 text-gray-400 cursor-pointer" />
-        </div>
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <p className="text-2xl font-bold text-gray-900">{profile.unreadMessages}</p>
-          <p className="text-xs text-gray-500">Unread</p>
-        </div>
-        <div className="text-center p-3 bg-gray-50 rounded-lg">
-          <p className="text-2xl font-bold text-gray-900">{profile.totalMessages}</p>
-          <p className="text-xs text-gray-500">Total</p>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <Brain className={`h-4 w-4 ${profile.aiEnabled ? 'text-green-500' : 'text-gray-400'}`} />
-          <span className="text-sm text-gray-600">AI Responses</span>
-        </div>
-        <label className="relative inline-flex items-center cursor-pointer">
-          <input 
-            type="checkbox" 
-            checked={profile.aiEnabled} 
-            className="sr-only peer"
-            onChange={() => {
-              setProfiles(profiles.map(p => 
-                p.id === profile.id ? {...p, aiEnabled: !p.aiEnabled} : p
-              ));
-            }}
-          />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-        </label>
-      </div>
-
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-gray-500">Response Rate</span>
-        <span className="font-medium text-green-600">{profile.responseRate}%</span>
-      </div>
-      <div className="flex items-center justify-between text-sm mt-1">
-        <span className="text-gray-500">Last Activity</span>
-        <span className="text-gray-700">{profile.lastActivity}</span>
-      </div>
-    </div>
-  );
-
-  const ConversationItem = ({ conversation }) => (
-    <div className={`p-4 border-l-4 ${conversation.isUnread ? 'border-blue-500 bg-blue-50' : 'border-transparent bg-white'} hover:bg-gray-50 transition-colors cursor-pointer`}>
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">
-              {conversation.clientName.split(' ').map(n => n[0]).join('')}
-            </span>
-          </div>
-          <div>
-            <h4 className="font-medium text-gray-900">{conversation.clientName}</h4>
-            <p className="text-sm text-gray-500">{conversation.clientNumber}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-500">{conversation.timestamp}</p>
-          {conversation.isAiResponded && (
-            <div className="flex items-center space-x-1 mt-1">
-              <Zap className="h-3 w-3 text-yellow-500" />
-              <span className="text-xs text-yellow-600">AI</span>
+        
+        <div className="flex items-center mt-4 space-x-2">
+          {!isNeutral && (
+            <div className={`flex items-center space-x-1 ${
+              isPositive ? 'text-emerald-600' : 'text-red-600'
+            }`}>
+              {isPositive ? (
+                <ArrowUpRight className="w-4 h-4" />
+              ) : (
+                <ArrowDownRight className="w-4 h-4" />
+              )}
+              <span className="text-sm font-medium">
+                {Math.abs(change)}%
+              </span>
             </div>
           )}
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            vs last {timeRange === '24h' ? 'day' : timeRange === '7d' ? 'week' : 'month'}
+          </span>
         </div>
       </div>
-      <p className="text-sm text-gray-700 truncate">{conversation.lastMessage}</p>
-    </div>
-  );
+    );
+  };
+
+  const ActivityItem: React.FC<{ activity: RecentActivity }> = ({ activity }) => {
+    const getStatusIcon = () => {
+      switch (activity.status) {
+        case 'success': return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+        case 'warning': return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+        case 'error': return <AlertTriangle className="w-4 h-4 text-red-500" />;
+        default: return <Activity className="w-4 h-4 text-blue-500" />;
+      }
+    };
+
+    const getTypeIcon = () => {
+      switch (activity.type) {
+        case 'message': return <MessageSquare className="w-5 h-5" />;
+        case 'client': return <Users className="w-5 h-5" />;
+        case 'ai': return <Brain className="w-5 h-5" />;
+        default: return <Settings className="w-5 h-5" />;
+      }
+    };
+
+    const timeAgo = (date: Date) => {
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      const minutes = Math.floor(diff / 60000);
+      
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      
+      const days = Math.floor(hours / 24);
+      return `${days}d ago`;
+    };
+
+    return (
+      <div className="flex items-start space-x-3 p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors">
+        <div className="w-10 h-10 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-400">
+          {getTypeIcon()}
+        </div>
+        
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+              {activity.title}
+            </p>
+            {getStatusIcon()}
+          </div>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+            {activity.description}
+          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
+            {timeAgo(activity.timestamp)}
+          </p>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <MessageSquare className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-xl font-bold text-gray-900">AssisText</h1>
-              </div>
-              <div className="hidden md:flex items-center space-x-1">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'overview' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('conversations')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'conversations' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Conversations
-                </button>
-                <button
-                  onClick={() => setActiveTab('profiles')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    activeTab === 'profiles' 
-                      ? 'bg-blue-100 text-blue-700' 
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Profiles
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search conversations..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                />
-              </div>
-              <button className="relative p-2 text-gray-400 hover:text-gray-500">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full"></span>
-              </button>
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-gray-300 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Admin</span>
-                <LogOut className="h-4 w-4 text-gray-400 cursor-pointer" />
+    <div className="space-y-6 p-6">
+      {/* Welcome Header */}
+      <div className="bg-gradient-to-r from-brand-primary to-brand-accent rounded-xl p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">
+              Welcome back, {user?.first_name || user?.username}! 👋
+            </h1>
+            <p className="text-white/80">
+              Here's what's happening with your AI assistant today.
+            </p>
+          </div>
+          <div className="hidden md:flex items-center space-x-4">
+            <div className="text-center">
+              <p className="text-white/80 text-sm">Status</p>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                <span className="text-sm font-medium">Active</span>
               </div>
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <StatCard
-                icon={MessageSquare}
-                title="Total Messages"
-                value={stats.totalMessages}
-                trend={12}
-                color="blue"
-              />
-              <StatCard
-                icon={Brain}
-                title="AI Responses"
-                value={stats.aiResponses}
-                trend={8}
-                color="purple"
-              />
-              <StatCard
-                icon={TrendingUp}
-                title="Response Rate"
-                value={`${stats.responseRate}%`}
-                trend={3}
-                color="green"
-              />
-              <StatCard
-                icon={Clock}
-                title="Avg Response Time"
-                value={stats.avgResponseTime}
-                trend={-15}
-                color="orange"
-              />
-            </div>
+      {/* Time Range Selector */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+          Analytics Overview
+        </h2>
+        <div className="flex items-center space-x-2">
+          <select
+            value={timeRange}
+            onChange={(e) => setTimeRange(e.target.value as '24h' | '7d' | '30d')}
+            className="form-input text-sm py-2"
+          >
+            <option value="24h">Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+          </select>
+        </div>
+      </div>
 
-            {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                  <PlusCircle className="h-5 w-5 text-blue-600" />
-                  <span className="font-medium text-gray-700">Add New Profile</span>
-                </button>
-                <button className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors">
-                  <Settings className="h-5 w-5 text-green-600" />
-                  <span className="font-medium text-gray-700">AI Settings</span>
-                </button>
-                <button className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors">
-                  <TrendingUp className="h-5 w-5 text-purple-600" />
-                  <span className="font-medium text-gray-700">View Analytics</span>
-                </button>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Total Messages"
+          value={stats.totalMessages.toLocaleString()}
+          change={stats.messagesChange}
+          icon={MessageSquare}
+        />
+        <StatCard
+          title="Active Clients"
+          value={stats.activeClients}
+          change={stats.clientsChange}
+          icon={Users}
+        />
+        <StatCard
+          title="Response Rate"
+          value={stats.responseRate}
+          change={stats.responseRateChange}
+          icon={TrendingUp}
+          suffix="%"
+        />
+        <StatCard
+          title="AI Efficiency"
+          value={stats.aiEfficiency}
+          change={stats.efficiencyChange}
+          icon={Brain}
+          suffix="%"
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Activity */}
+        <div className="lg:col-span-2">
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Recent Activity
+                </h3>
+                <Link
+                  to="/app/analytics"
+                  className="text-sm text-brand-primary hover:text-brand-accent transition-colors"
+                >
+                  View all
+                </Link>
               </div>
             </div>
-
-            {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Conversations</h2>
-                <div className="space-y-2">
-                  {conversations.slice(0, 3).map(conversation => (
-                    <ConversationItem key={conversation.id} conversation={conversation} />
-                  ))}
-                </div>
-                <button className="w-full mt-4 text-blue-600 hover:text-blue-700 text-sm font-medium">
-                  View All Conversations
-                </button>
-              </div>
-
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Status</h2>
-                <div className="space-y-4">
-                  {profiles.map(profile => (
-                    <div key={profile.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{profile.name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {profile.unreadMessages} unread • {profile.isActive ? 'Active' : 'Inactive'}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        {profile.aiEnabled && <Brain className="h-4 w-4 text-green-500" />}
-                        <div className={`h-3 w-3 rounded-full ${profile.isActive ? 'bg-green-400' : 'bg-gray-300'}`}></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'conversations' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Conversations</h2>
-              <div className="flex items-center space-x-3">
-                <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                  <Filter className="h-4 w-4" />
-                  <span>Filter</span>
-                </button>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-              {conversations.map(conversation => (
-                <ConversationItem key={conversation.id} conversation={conversation} />
+            <div className="divide-y divide-slate-200 dark:divide-slate-700">
+              {recentActivity.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} />
               ))}
             </div>
           </div>
-        )}
+        </div>
 
-        {activeTab === 'profiles' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Profiles</h2>
-              <button className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                <PlusCircle className="h-4 w-4" />
-                <span>Add Profile</span>
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {profiles.map(profile => (
-                <ProfileCard key={profile.id} profile={profile} />
-              ))}
+        {/* Quick Actions & System Status */}
+        <div className="space-y-6">
+          {/* Quick Actions */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+              Quick Actions
+            </h3>
+            <div className="space-y-3">
+              <Link
+                to="/app/conversations"
+                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group"
+              >
+                <MessageSquare className="w-5 h-5 text-brand-primary group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  View Conversations
+                </span>
+              </Link>
+              <Link
+                to="/app/ai-settings"
+                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group"
+              >
+                <Brain className="w-5 h-5 text-brand-primary group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Configure AI
+                </span>
+              </Link>
+              <Link
+                to="/app/analytics"
+                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors group"
+              >
+                <BarChart3 className="w-5 h-5 text-brand-primary group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  View Analytics
+                </span>
+              </Link>
             </div>
           </div>
-        )}
-      </main>
+
+          {/* System Status */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">
+              System Status
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Brain className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">AI Engine</span>
+                </div>
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 px-2 py-1 rounded-full">
+                  Online
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">SignalWire</span>
+                </div>
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 px-2 py-1 rounded-full">
+                  Connected
+                </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <Zap className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">Auto-Reply</span>
+                </div>
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 px-2 py-1 rounded-full">
+                  Active
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

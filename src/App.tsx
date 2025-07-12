@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -16,16 +15,21 @@ import AuthLayout from './components/Layout/AuthLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import PublicRouteWrapper from './components/common/PublicRouteWrapper';
 
-// Pages
+// Public Pages
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
+
+// Protected Pages - Main App
 import Dashboard from './pages/Dashboard';
-// import MessagingInterface from './pages/MessagingInterface';
+import Conversations from './pages/Conversations';
 import Analytics from './pages/Analytics';
-import ClientManagement from './pages/ClientManagement';
 import Billing from './pages/Billing';
+
+// Protected Pages - Settings (Separate Routes)
 import ProfileSettings from './pages/ProfileSettings';
+import SignalWireSettings from './pages/SignalWireSettings';
+import AISettings from './pages/AISettings';
 
 // Styles
 import './styles/globals.css';
@@ -90,7 +94,7 @@ function AppContent() {
             }
           />
 
-          {/* Protected App Routes */}
+          {/* Protected App Routes - Use AppLayout with Sidebar */}
           <Route
             path="/app/*"
             element={
@@ -99,15 +103,18 @@ function AppContent() {
               </ProtectedRoute>
             }
           >
+            {/* Main app pages that appear in AppLayout outlet */}
             <Route index element={<Navigate to="/app/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
-           {/* <Route path="messages" element={<MessagingInterface />} /> */}
+            <Route path="conversations" element={<Conversations />} />
             <Route path="analytics" element={<Analytics />} />
-            <Route path="clients" element={<ClientManagement />} />
             <Route path="billing" element={<Billing />} />
+            
+            {/* AI Settings within app layout */}
+            <Route path="ai-settings" element={<AISettings />} />
           </Route>
 
-          {/* Profile Settings Route (outside of main app layout for full control) */}
+          {/* Separate Settings Routes - Full Page Layout */}
           <Route
             path="/settings"
             element={
@@ -116,12 +123,22 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/signalwire-settings"
+            element={
+              <ProtectedRoute>
+                <SignalWireSettings />
+              </ProtectedRoute>
+            }
+          />
 
-          {/* Legacy redirects */}
+          {/* Legacy redirects for backward compatibility */}
           <Route path="/profiles" element={<Navigate to="/settings" replace />} />
           <Route path="/profile-management" element={<Navigate to="/settings" replace />} />
           <Route path="/app/profiles" element={<Navigate to="/settings" replace />} />
           <Route path="/app/settings" element={<Navigate to="/settings" replace />} />
+          <Route path="/app/signalwire" element={<Navigate to="/signalwire-settings" replace />} />
 
           {/* Catch all - redirect to dashboard if authenticated, landing if not */}
           <Route path="*" element={<Navigate to="/" replace />} />
@@ -132,6 +149,12 @@ function AppContent() {
           position="top-right"
           toastOptions={{
             duration: 4000,
+            className: 'toast-custom',
+            style: {
+              background: 'var(--card-bg)',
+              color: 'var(--text-color)',
+              border: '1px solid var(--border-color)',
+            },
           }}
         />
       </div>
