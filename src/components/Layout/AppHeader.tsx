@@ -8,7 +8,8 @@ import {
   Phone,
   User,
   Menu,
-  X
+  X,
+  Brain
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SimpleThemeToggle } from '../UI/ThemeToggle';
@@ -50,21 +51,25 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     }
   };
 
+  // Updated dropdown items - changed "App Settings" to "AI Settings"
   const dropdownItems = [
     {
       label: 'Profile Settings',
       icon: User,
       action: () => navigate('/settings'),
+      description: 'Personal information and account settings'
     },
     {
       label: 'SignalWire Settings',
       icon: Phone,
       action: () => navigate('/app/signalwire-settings'),
+      description: 'Phone number and messaging configuration'
     },
     {
-      label: 'App Settings',
-      icon: Settings,
-      action: () => navigate('/app/settings'),
+      label: 'AI Settings', // Changed from "App Settings"
+      icon: Brain, // Changed from Settings to Brain for better semantic meaning
+      action: () => navigate('/app/ai-settings'), // Updated route to match naming
+      description: 'AI behavior and response customization'
     },
     {
       type: 'divider'
@@ -99,32 +104,30 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {/* Page Title - Hidden on mobile when sidebar is open */}
           <div className={`${isMobile && isSidebarOpen ? 'hidden' : 'block'}`}>
             <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-              Dashboard
+              AssisText
             </h1>
           </div>
         </div>
 
-        {/* Right Side Actions */}
+        {/* Right Side - User Actions */}
         <div className="flex items-center space-x-3">
-          {/* Dark Mode Toggle */}
+          {/* Theme Toggle */}
           <SimpleThemeToggle />
-          
+
           {/* Notifications */}
-          <button className="relative p-2 text-slate-500 hover:text-brand-primary hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all duration-200">
+          <button className="p-2 text-slate-500 hover:text-brand-primary hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all duration-200 relative">
             <Bell className="w-5 h-5" />
-            {/* Notification badge */}
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-brand-accent rounded-full"></span>
+            {/* Optional notification badge */}
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
           </button>
 
-          {/* User Profile Link */}
+          {/* Profile Link */}
           <Link
             to="/settings"
-            className="flex items-center space-x-2 p-2 text-slate-500 hover:text-brand-primary hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
+            className="flex items-center space-x-2 px-3 py-2 text-slate-500 hover:text-brand-primary hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-all duration-200"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-brand-primary to-brand-accent rounded-lg flex items-center justify-center">
-              <span className="text-white text-sm font-semibold">
-                {user?.first_name?.[0] || user?.username?.[0] || 'U'}
-              </span>
+            <div className="w-8 h-8 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+              {user?.first_name?.[0] || user?.display_name?.[0] || user?.username?.[0] || 'U'}
             </div>
             <span className="hidden sm:block text-sm font-medium text-slate-900 dark:text-slate-100">
               {user?.display_name || user?.first_name || user?.username}
@@ -151,9 +154,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               <MoreVertical className="w-5 h-5" />
             </button>
 
-            {/* Dropdown Menu */}
+            {/* Enhanced Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg backdrop-blur-sm z-50">
+              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg backdrop-blur-sm z-50">
                 <div className="py-2">
                   {dropdownItems.map((item, index) => {
                     if (item.type === 'divider') {
@@ -174,12 +177,19 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
                           setIsDropdownOpen(false);
                         }}
                         className={`
-                          w-full flex items-center space-x-3 px-4 py-2 text-sm transition-colors
+                          w-full flex items-start space-x-3 px-4 py-3 text-sm transition-colors text-left
                           ${item.className || 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}
                         `}
                       >
-                        <Icon className="w-4 h-4" />
-                        <span>{item.label}</span>
+                        <Icon className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <div className="font-medium">{item.label}</div>
+                          {item.description && (
+                            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
                       </button>
                     );
                   })}

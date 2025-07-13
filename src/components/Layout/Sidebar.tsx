@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   ];
 
   const sidebarClasses = `
-    fixed top-0 left-0 h-full bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700
+    fixed top-0 left-0 h-full bg-white dark:bg-slate-900 border-r border-accent-200 dark:border-accent-700
     shadow-lg transition-all duration-300 z-40
     ${isOpen ? 'w-64' : 'w-16'}
     ${isMobile && !isOpen ? '-translate-x-full' : ''}
@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <aside className={sidebarClasses}>
       {/* Logo Section */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="p-4 border-b border-accent-200 dark:border-accent-700">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-accent rounded-xl flex items-center justify-center shadow-lg">
             <span className="text-white font-bold text-xl">A</span>
@@ -69,8 +69,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`
                     flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 group
                     ${isActive 
-                      ? 'bg-brand-primary text-white shadow-md' 
-                      : 'text-slate-600 dark:text-slate-300 hover:text-brand-primary hover:bg-slate-50 dark:hover:bg-slate-800'
+                      ? 'bg-slate text-white shadow-md' 
+                      : 'text-brand-primary dark:text-secondary hover:text-secondary-700 hover:bg-accent-200 dark:hover:bg-secondary-700'
                     }
                     ${!isOpen ? 'justify-center' : ''}
                   `}

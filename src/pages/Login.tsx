@@ -179,11 +179,11 @@ const Login: React.FC = () => {
         
         {/* Username Field */}
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="username" className="block text-sm font-medium text-grey-700 mb-2">
             Username or Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-400" />
             <input
               id="username"
               type="text"
@@ -192,7 +192,7 @@ const Login: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter your username or email"
               autoComplete="username"
-              className={`w-full pl-10 pr-4 py-3 border rounded-xl bg-gray   dark:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
+              className={`w-full pl-10 pr-4 py-3 border text-secondary-700 rounded-xl bg-gray   dark:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
                 validationErrors.username 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
                   : 'border-gray-300 hover:border-gray-400'
@@ -210,11 +210,11 @@ const Login: React.FC = () => {
 
         {/* Password Field */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="password" className="block text-sm font-medium text-grey-700 mb-2">
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-700" />
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -223,7 +223,7 @@ const Login: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter your password"
               autoComplete="current-password"
-              className={`w-full pl-10 pr-12 py-3 border rounded-xl bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
+              className={`w-full pl-10 pr-12 py-3 border text-secondary-700 rounded-xl bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
                 validationErrors.password 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
                   : 'border-gray-300 hover:border-gray-400'

@@ -682,4 +682,4 @@ const SignalWireSettings: React.FC = () => {
   );
 };
 
-export default SignalWireSettings;
+export default SignalWireSettings;  
