@@ -12,8 +12,8 @@ import AppLayout from './components/Layout/AppLayout';
 import AuthLayout from './components/Layout/AuthLayout';
 
 // Route Protection
-import ProtectedRoute from './components/common/ProtectedRoute';
-import PublicRouteWrapper from './components/common/PublicRouteWrapper';
+import ProtectedRoute from './components/Common/ProtectedRoute';
+import PublicRouteWrapper from './components/Common/PublicRouteWrapper';
 
 // Public Pages
 import LandingPage from './pages/LandingPage';
@@ -98,9 +98,10 @@ function AppContent() {
           <Route
             path="/app/*"
             element={
-              <ProtectedRoute>
+              <PublicRouteWrapper>
                 <AppLayout />
-              </ProtectedRoute>
+              </PublicRouteWrapper>
+              
             }
           >
             {/* Main app pages that appear in AppLayout outlet */}
@@ -111,27 +112,13 @@ function AppContent() {
             <Route path="billing" element={<Billing />} />
             
             {/* AI Settings within app layout */}
-            <Route path="ai-settings" element={<AISettings />} />
-          </Route>
-
-          {/* Separate Settings Routes - Full Page Layout */}
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <ProfileSettings />
-              </ProtectedRoute>
-            }
-          />
-          
-          <Route
-            path="/signalwire-settings"
-            element={
-              <ProtectedRoute>
-                <SignalWireSettings />
-              </ProtectedRoute>
-            }
-          />
+               <Route path="settings">
+                    <Route index element={<Navigate to="/app/settings/profile" replace />} />
+                    <Route path="profile" element={<ProfileSettings />} />
+                    <Route path="signalwire" element={<SignalWireSettings />} />
+                    <Route path="ai" element={<AISettings />} />
+                  </Route>
+                </Route>
 
           {/* Legacy redirects for backward compatibility */}
           <Route path="/profiles" element={<Navigate to="/settings" replace />} />

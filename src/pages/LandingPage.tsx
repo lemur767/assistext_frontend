@@ -3,19 +3,20 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MessageSquare, Shield, Brain, Zap, CheckCircle, Star } from 'lucide-react';
 
+
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900">
+    <div className="min-h-screen ">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-grid opacity-20"></div>
         
         {/* Gradient Orbs */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute top-40 left-10 w-30 h-30 bg-gradient-to-r from-primary-400 to-accent-900 rounded-full filter mix-blend-multiply blur-xl opacity-80 animate-pulse"></div>
+        <div className="absolute top-20 right-10 w-3  0 h-30 bg-gradient-to-r from-accent-600 to-indigo-400 rounded-full filter mix-blend-multiply blur-xl opacity-80 animate-pulse delay-1000"></div>
         
-        <div className="relative container mx-auto px-6 pt-20 pb-32">
+        <div className="relative container bg-[url(/src/assets/Background.png)] bg-size-100% mx-auto px-6 pt-20 pb-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="mb-8">
               <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/20">

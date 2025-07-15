@@ -4,20 +4,18 @@ import Sidebar from './Sidebar';
 import AppHeader from './AppHeader';
 
 const AppLayout: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Handle responsive behavior
+  // Detect screen size and set responsive behavior
   useEffect(() => {
     const checkScreenSize = () => {
       const mobile = window.innerWidth < 1024; // lg breakpoint
       setIsMobile(mobile);
       
-      // Auto-collapse sidebar on mobile
+      // Auto-close sidebar on mobile, auto-open on desktop
       if (mobile) {
-        setIsSidebarOpen(false);
-      } else {
-        setIsSidebarOpen(true);
+        setSidebarOpen(false);
       }
     };
 
@@ -26,46 +24,49 @@ const AppLayout: React.FC = () => {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  const handleSidebarToggle = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      {/* Sidebar */}
-      <Sidebar
-        isOpen={isSidebarOpen}
-        onToggle={handleSidebarToggle}
-        isMobile={isMobile}
-      />
+    <div className="h-screen flex overflow-hidden bg-gray-50 dark:bg-gray-900">
+      {/* Desktop Sidebar - Always visible on desktop */}
+      {!isMobile && (
+        <Sidebar onClose={closeSidebar} />
+      )}
 
       {/* Mobile Sidebar Overlay */}
-      {isMobile && isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
+      {isMobile && sidebarOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+            onClick={closeSidebar}
+          />
+          <div className="fixed inset-y-0 left-0 z-50 w-64 lg:hidden">
+            <Sidebar onClose={closeSidebar} />
+          </div>
+        </>
       )}
 
       {/* Main Content Area */}
-      <div className={`
-        min-h-screen transition-all duration-300
-        ${isSidebarOpen && !isMobile ? 'ml-64' : isMobile ? 'ml-0' : 'ml-16'}
-      `}>
-        {/* Header */}
-        <AppHeader
-          isSidebarOpen={isSidebarOpen}
-          onSidebarToggle={handleSidebarToggle}
-          isMobile={isMobile}
-        />
+      <div className="flex flex-col w-0 flex-1 overflow-hidden">
+        {/* Mobile Header - Only show on mobile/tablet */}
+        {isMobile && (
+          <AppHeader 
+            onMenuClick={toggleSidebar}
+            isMobile={isMobile}
+          />
+        )}
 
         {/* Page Content */}
-        <main className="min-h-[calc(100vh-4rem)]">
-          <Outlet />
+        <main className="flex-1 relative overflow-y-auto focus:outline-none">
+          <div className="py-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+              <Outlet />
+            </div>
+          </div>
         </main>
       </div>
     </div>
   );
 };
-
 export default AppLayout;

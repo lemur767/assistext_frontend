@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6 p-6">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-brand-primary to-brand-accent rounded-xl p-6 text-white">
+      <div className="border-accent-400 bg-brand-primary dark:bg-secondary-500 dark:border-white rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">

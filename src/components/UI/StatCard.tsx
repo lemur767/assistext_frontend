@@ -1,4 +1,4 @@
-tsxinterface StatsCardProps {
+interface StatsCardProps {
   title: string;
   value: string | number;
   change?: string;
