@@ -99,8 +99,8 @@ function AppContent() {
             path="/app/*"
             element={
               <ProtectedRoute>
-               <AppLayout />
-              </ProtectedRoute>
+              <AppLayout />
+             </ProtectedRoute>
               
             }
           >
