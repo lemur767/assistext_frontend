@@ -98,9 +98,9 @@ function AppContent() {
           <Route
             path="/app/*"
             element={
-              <PublicRouteWrapper>
+              <ProtectedRoute>
                 <AppLayout />
-              </PublicRouteWrapper>
+              </ProtectedRoute>
               
             }
           >

@@ -305,6 +305,14 @@ export default {
           WebkitBackgroundClip: 'text',
           color: 'transparent',
         },
+
+        '.dark .gradient-text-secondary':{
+          background: 'linear-gradient(135deg, #d214c2, #88d5f4, #590981ff)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          color: 'transparent',
+
+        },
         '.dark .gradient-text-brand': {
           background: 'linear-gradient(135deg, #88d5f4, #ec2fdb)',
           backgroundClip: 'text',

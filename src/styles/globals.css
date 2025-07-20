@@ -129,10 +129,10 @@
     transition-duration: 300ms;
     transition-duration: 200ms;
     cursor: pointer;
-    -webkit-border-radius:10px;
-    -moz-border-radius:10px;
-    -ms-border-radius:10px;
-    -o-border-radius:10px;
+    -webkit-border-radius: 0.75rem;
+    -moz-border-radius: 0.75rem;
+    -ms-border-radius: 0.75rem;
+    -o-border-radius: 0.75rem;
 }
 
   .btn-primary {
