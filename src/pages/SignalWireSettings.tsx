@@ -445,7 +445,7 @@ const SignalWireSettings: React.FC = () => {
               <button
                 onClick={handleSearchNumbers}
                 disabled={isLoading || !searchCriteria.locality}
-                className="btn-primary flex items-center space-x-2"
+                className="btn btn-primary flex items-center space-x-2 rounded-lg px-4 py-2"
               >
                 {isLoading ? (
                   <Loader className="w-4 h-4 animate-spin" />
@@ -467,7 +467,7 @@ const SignalWireSettings: React.FC = () => {
               </h2>
               <button
                 onClick={() => setCurrentStep('search')}
-                className="text-brand-primary hover:text-brand-accent transition-colors"
+                className="text-brand-primary hover:text-brand-accent transition-colors btn btn-primary rounded-lg px-4 py-2"
               >
                 ← Back to search
               </button>
@@ -535,7 +535,7 @@ const SignalWireSettings: React.FC = () => {
             <div className="flex justify-between mt-8">
               <button
                 onClick={() => setCurrentStep('search')}
-                className="btn-outline"
+                className="btn-outline rounded-lg flex items-center space-x-2 px-4 py-2"
               >
                 Back
               </button>

@@ -10,7 +10,13 @@
     "preview": "vite preview",
     "deploy": "npm run build:prod && npm run deploy:server",
     "deploy:server": "rsync -avz --copy server.js dist/ --copy ecosystem.config.cjs dist/ --copy package* dist/ ubuntu@172.236.112.128:/opt/assistext_frontend/dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint src --ext ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "clean": "rm -rf dist node_modules/.vite",
+    "analyze": "npm run build && npx vite-bundle-analyzer dist"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.10",
@@ -45,6 +51,5 @@
     "terser": "^5.43.1",
     "typescript": "^5.2.2",
     "vite": "^6.3.5"
-
   }
 }

@@ -12,12 +12,12 @@ import AppLayout from './components/Layout/AppLayout';
 import AuthLayout from './components/Layout/AuthLayout';
 
 // Route Protection
-import ProtectedRoute from './components/Common/ProtectedRoute';
-import PublicRouteWrapper from './components/Common/PublicRouteWrapper';
+import ProtectedRoute from '@components/common/ProtectedRoute';
+import PublicRouteWrapper from '@components/common/PublicRouteWrapper';
 
 // Public Pages
-import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
+import LandingPage from '@pages/LandingPage';
+import Login from '@pages/Login';
 import Register from './pages/Register';
 
 // Protected Pages - Main App
@@ -98,9 +98,9 @@ function AppContent() {
           <Route
             path="/app/*"
             element={
-              <PublicRouteWrapper>
-                <AppLayout />
-              </PublicRouteWrapper>
+              <ProtectedRoute>
+              <AppLayout />
+             </ProtectedRoute>
               
             }
           >

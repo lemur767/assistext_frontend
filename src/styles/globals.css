@@ -80,8 +80,17 @@
   }
   
   body {
-    @apply bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100;
+    background-color: slate-50; 
+    color:slate-900;
     font-family: 'Inter', system-ui, sans-serif;
+  }
+  body.light {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+  }
+  body.dark {
+    background-color: var(--bg-color);
+    color: var(--text-color);
   }
 
   /* Disable transitions during theme switching for performance */
@@ -105,15 +114,38 @@
 
   /* Enhanced button styles using your brand colors */
   .btn {
-    @apply px-6 py-3 rounded-xl font-semibold border-none cursor-pointer transition-all duration-200 inline-flex items-center justify-center;
-  }
+    display: inline-flex;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    align-items: center;
+    border-radius: 0.75rem;
+    border-style: none;
+    font-weight: 600;
+    border-radius:10px;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+    transition-duration: 200ms;
+    cursor: pointer;
+    -webkit-border-radius: 0.75rem;
+    -moz-border-radius: 0.75rem;
+    -ms-border-radius: 0.75rem;
+    -o-border-radius: 0.75rem;
+}
 
   .btn-primary {
     background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
-    @apply text-white;
-  }
+    border-radius: 10px;
+    -webkit-border-radius: 10px;    
+    -moz-border-radius: 10px;    
+    -ms-border-radius: 10px; 
+    -o-border-radius: 10px;
+}
   
   .btn-primary:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); 
     @apply shadow-lg transform -translate-y-0.5;
     filter: brightness(1.1);
   }
@@ -130,6 +162,10 @@
 
   .btn-outline {
     background: transparent;
+    padding-left:4px;
+    padding-right:4px;
+    padding-top: 6px;
+    padding-bottom: 6px;
     color: var(--text-color);
     border: 1px solid var(--border-color);
   }
