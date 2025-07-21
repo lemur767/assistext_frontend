@@ -19,8 +19,6 @@
     "analyze": "npm run build && npx vite-bundle-analyzer dist"
   },
   "dependencies": {
-    "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query": "^5.80.7",
     "@tanstack/react-query-devtools": "^5.81.5",
     "@types/axios": "^0.14.4",
@@ -37,6 +35,8 @@
     "ts-interface-checker": "^1.0.2"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
