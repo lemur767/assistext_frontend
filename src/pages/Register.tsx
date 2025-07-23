@@ -12,6 +12,11 @@ interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
+  termsAccepted: boolean;
+  country?: string; // Optional field for future use
+  area_code?: string; // Optional field for future use
+  city?: string; // Optional field for future use
+  region?: string; // Optional field for future use
 }
 
 interface ValidationErrors {
@@ -32,7 +37,8 @@ const Register: React.FC = () => {
     username: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    termsAccepted: false
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -132,7 +138,10 @@ const Register: React.FC = () => {
         password: formData.password,
         confirm_password: formData.confirmPassword,  // ← Backend expects this name
         first_name: formData.firstName,              // ← Backend expects snake_case
-        last_name: formData.lastName                 // ← Backend expects snake_case
+        last_name: formData.lastName,                // ← Backend expects snake_case
+        terms_accepted: true,                        // or formData.termsAccepted if you want to use the form value
+        subproject_sid: '',                          // Provide actual value if needed
+        subproject_auth_token: ''                    // Provide actual value if needed
       });
       
       // Registration successful - user will be redirected by the auth context
