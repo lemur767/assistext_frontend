@@ -1,20 +1,10 @@
-import type { Client, ApiResponse, PaginatedResponse, ClientFilters, ClientStats } from '../types';
+import type { Client, ApiResponse } from '../types';
 import apiClient from './apiClient';
 import { API_ENDPOINTS } from '../utils/constants';
 
-/**
- * Client Service - Updated to work without profiles
- * All clients are now automatically associated with the current user
- */
+
 export class ClientService {
   
-  // =============================================================================
-  // CLIENT LISTING AND FILTERING
-  // =============================================================================
-  
-  /**
-   * Get all clients for the current user
-   */
   static async getClients(params: {
     page?: number;
     per_page?: number;
@@ -53,14 +43,13 @@ export class ClientService {
       const response = await apiClient.get(url);
       return response;
     } catch (error) {
-      console.error('Error fetching clients:', error);
-      throw new Error(`Failed to fetch clients: ${error.message}`);
+      console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
+    
     }
   }
-  
-  /**
-   * Get a specific client by ID
-   */
+
   static async getClient(
     clientId: string,
     options: {
@@ -82,18 +71,13 @@ export class ClientService {
       const response = await apiClient.get<Client>(url);
       return response;
     } catch (error) {
-      console.error('Error fetching client:', error);
-      throw new Error(`Failed to fetch client: ${error.message}`);
+       console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
+    
     }
   }
-  
-  // =============================================================================
-  // CLIENT CREATION AND UPDATES
-  // =============================================================================
-  
-  /**
-   * Create a new client
-   */
+
   static async createClient(clientData: {
     phone_number: string;
     name?: string;
@@ -111,14 +95,13 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error creating client:', error);
-      throw new Error(`Failed to create client: ${error.message}`);
+      console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  /**
-   * Update an existing client
-   */
+
   static async updateClient(
     clientId: string,
     updates: Partial<{
@@ -142,14 +125,12 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error updating client:', error);
-      throw new Error(`Failed to update client: ${error.message}`);
+     console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  /**
-   * Delete a client
-   */
   static async deleteClient(clientId: string): Promise<{ message: string }> {
     try {
       const response = await apiClient.delete<ApiResponse<{ message: string }>>(
@@ -157,18 +138,14 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error deleting client:', error);
-      throw new Error(`Failed to delete client: ${error.message}`);
+      console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  // =============================================================================
-  // CLIENT ACTIONS
-  // =============================================================================
-  
-  /**
-   * Block a client
-   */
+
+
   static async blockClient(
     clientId: string,
     reason: string = 'No reason provided'
@@ -180,14 +157,13 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error blocking client:', error);
-      throw new Error(`Failed to block client: ${error.message}`);
+     console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  /**
-   * Unblock a client
-   */
+ 
   static async unblockClient(clientId: string): Promise<{ message: string; client: Client }> {
     try {
       const response = await apiClient.post<ApiResponse<{ message: string; client: Client }>>(
@@ -195,14 +171,13 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error unblocking client:', error);
-      throw new Error(`Failed to unblock client: ${error.message}`);
+      console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  /**
-   * Flag a client
-   */
+
   static async flagClient(
     clientId: string,
     reasons: string[]
@@ -214,14 +189,12 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error flagging client:', error);
-      throw new Error(`Failed to flag client: ${error.message}`);
+       console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  /**
-   * Unflag a client
-   */
   static async unflagClient(clientId: string): Promise<{ message: string; client: Client }> {
     try {
       const response = await apiClient.post<ApiResponse<{ message: string; client: Client }>>(
@@ -229,18 +202,13 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error unflagging client:', error);
-      throw new Error(`Failed to unflag client: ${error.message}`);
+      console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  // =============================================================================
-  // BULK OPERATIONS
-  // =============================================================================
   
-  /**
-   * Perform bulk operations on multiple clients
-   */
   static async bulkOperation(data: {
     client_ids: string[];
     operation: 'block' | 'unblock' | 'flag' | 'unflag' | 'delete' | 'update_tags';
@@ -265,18 +233,13 @@ export class ClientService {
       );
       return response.data;
     } catch (error) {
-      console.error('Error performing bulk operation:', error);
-      throw new Error(`Failed to perform bulk operation: ${error.message}`);
+     console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  // =============================================================================
-  // STATISTICS AND ANALYTICS
-  // =============================================================================
-  
-  /**
-   * Get client statistics
-   */
+ 
   static async getClientStats(days: number = 30): Promise<{
     total_clients: number;
     new_clients_last_30_days: number;
@@ -291,32 +254,23 @@ export class ClientService {
       const response = await apiClient.get<ApiResponse<any>>(url);
       return response.data;
     } catch (error) {
-      console.error('Error fetching client stats:', error);
-      throw new Error(`Failed to fetch client stats: ${error.message}`);
+      console.error('Error purchasing phone number:', error);
+      const errorMessage = (error instanceof Error) ? error.message : String(error);
+      throw new Error(`Failed to purchase phone number: ${errorMessage}`);
     }
   }
   
-  // =============================================================================
-  // UTILITY METHODS
-  // =============================================================================
-  
-  /**
-   * Get client display name
-   */
+
   static getDisplayName(client: Client): string {
     return client.name || client.nickname || client.phone_number;
   }
   
-  /**
-   * Get client's tags as array
-   */
+
   static getTags(client: Client): string[] {
     return client.tags || [];
   }
   
-  /**
-   * Check if client is recent contact
-   */
+
   static isRecentContact(client: Client, days: number = 7): boolean {
     if (!client.last_interaction) return false;
     
@@ -327,11 +281,10 @@ export class ClientService {
     return lastInteraction >= daysAgo;
   }
   
-  /**
-   * Get risk level color
-   */
+
   static getRiskLevelColor(riskLevel: string): string {
-    const colors = {
+    
+    const colors: { [key: string]: string } = {
       low: 'green',
       medium: 'yellow',
       high: 'orange',
@@ -344,7 +297,7 @@ export class ClientService {
    * Get relationship status label
    */
   static getRelationshipStatusLabel(status: string): string {
-    const labels = {
+    const labels: { [key: string]: string } = {
       new: 'New',
       regular: 'Regular',
       vip: 'VIP',
@@ -389,7 +342,7 @@ export class ClientService {
    * Get priority level label
    */
   static getPriorityLabel(level: number): string {
-    const labels = {
+    const labels: { [key: number]: string } = {
       1: 'Low',
       2: 'Normal',
       3: 'Medium',

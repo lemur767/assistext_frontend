@@ -34,13 +34,13 @@ class ApiClient {
           config.headers.Authorization = `Bearer ${token}`;
         }
         
-        if (process.env.NODE_ENV !== 'production') {
+        if (import.meta.env.NODE_ENV !== 'production') {
           console.log(`🔍 API Request: ${config.method?.toUpperCase()} ${config.url}`);
         }
         return config;
       },
       (error: any) => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (import.meta.env.NODE_ENV !== 'production') {
           console.error('🔥 API Request Error:', error);
         }
         return Promise.reject(error);
@@ -50,14 +50,14 @@ class ApiClient {
     // Response interceptor for error handling
     this.client.interceptors.response.use(
       (response: any) => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (import.meta.env.NODE_ENV !== 'production') {
           console.log(`✅ API Response: ${response.status} ${response.config.url}`);
         }
         
         return response.data;
       },
       (error: any) => {
-        if (process.env.NODE_ENV !== 'production') {
+        if (import.meta.env.NODE_ENV !== 'production') {
           console.error('🔥 API Response Error:', error);
         }
         

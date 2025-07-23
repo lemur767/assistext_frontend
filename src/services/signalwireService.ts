@@ -44,9 +44,7 @@ export interface SendSmsResponse {
 }
 
 export class SignalWireService {
-  /**
-   * Get SignalWire integration status
-   */
+  
   static async getStatus(): Promise<SignalWireStatus> {
     try {
       const response = await apiClient.get<SignalWireStatus>('/api/signalwire/status');

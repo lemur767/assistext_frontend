@@ -1,10 +1,8 @@
-// src/services/registrationService.ts - Fixed exports
 
-import apiClient from './apiClient';
 
 class ValidationService {
 
-  export const validatePassword(password: string): { isValid: boolean; errors: string[] } {
+ validatePassword(password: string): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
     if (password.length < 8) {
@@ -26,14 +24,14 @@ class ValidationService {
   /**
    * Check if passwords match
    */
-  export const validatePasswordMatch(password: string, confirmPassword: string): boolean {
+  validatePasswordMatch(password: string, confirmPassword: string): boolean {
     return password === confirmPassword;
   }
 
   /**
    * Validate email format
    */
-  export const validateEmailFormat(email: string): boolean {
+  validateEmailFormat(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }

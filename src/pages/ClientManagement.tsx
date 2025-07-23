@@ -37,23 +37,33 @@ const ClientManagement: React.FC<ClientManagementProps> = ({ profileId }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Load clients data
+  const user_id = localStorage.getItem('user_id');
+
   const loadClients = async () => {
     try {
       setIsLoading(true);
       setIsError(false);
       
-      const searchFilters: ClientFilters = {
+      // Convert tags array to comma-separated string if present
+      const searchFilters: any = {
         ...filters,
         ...(searchQuery && { search: searchQuery }),
+        ...(filters.tags && Array.isArray(filters.tags) ? { tags: filters.tags.join(',') } : {}),
       };
 
       let response: PaginatedResponse<Client>;
       
-      if (profileId) {
-        response = await ClientService.getClients(profileId, currentPage, 20, searchFilters);
-      } else {
-        response = await ClientService.getAllClients(currentPage, 20, searchFilters);
-      }
+      const rawResponse = await ClientService.getClients({
+        page: currentPage,
+        per_page: 20,
+        ...searchFilters
+      });
+      response = {
+        data: rawResponse.clients,
+        pagination: rawResponse.pagination,
+        success: true,
+        filters_applied: rawResponse.filters_applied
+      };
 
       setClients(response.data);
       setTotalPages(response.pagination.pages);

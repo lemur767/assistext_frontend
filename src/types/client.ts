@@ -8,7 +8,7 @@ export interface Client {
   phone_number: string;
   name?: string;
   email?: string;
-  notes?: string;
+  notes?: string | ClientNote[];
   tags: string[];
   is_blocked: boolean;
   is_flagged: boolean;
@@ -21,8 +21,7 @@ export interface Client {
   updated_at: string;
   last_contact: string;
   total_messages: number;
-  unread_messages: number;
-  profile_ids: string[]; // Profiles this client has contacted
+  unread_messages: number
   contacted_profiles?: {
     id: string;
     name: string;
@@ -44,7 +43,7 @@ export interface Client {
 export interface ClientFilters {
   search?: string;
   status?: 'all' | 'active' | 'blocked' | 'flagged' | 'regular' | 'vip' | 'new';
-  profile_id?: string;
+  user_id?: string; // Filter by user who owns the client
   flagged_only?: boolean;
   blocked_only?: boolean;
   regular_only?: boolean;
@@ -161,8 +160,7 @@ export interface ClientActivity {
 export interface ClientConversation {
   id: string;
   client_id: string;
-  profile_id: string;
-  profile_name: string;
+  user_id: string; // User who owns the conversation
   last_message_at: string;
   message_count: number;
   unread_count: number;
@@ -333,4 +331,3 @@ export interface ClientWebSocketEvent {
   user_id: string;
 }
 
-export default Client;
