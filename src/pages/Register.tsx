@@ -1,7 +1,7 @@
 // src/pages/Register.tsx - Complete working register component
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, User, Eye, EyeOff, ArrowRight, AlertCircle, Loader, CheckCircle } from 'lucide-react';
+// import { Link } from 'react-router-dom'; // Remove for artifact
+import { Mail, Lock, User, Eye, EyeOff, ArrowRight, AlertCircle, Loader, CheckCircle, MapPin, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import type { RegisterData } from '../types/auth';
 
@@ -12,11 +12,10 @@ interface RegisterFormData {
   email: string;
   password: string;
   confirmPassword: string;
-  termsAccepted: boolean;
-  country?: string; // Optional field for future use
-  area_code?: string; // Optional field for future use
-  city?: string; // Optional field for future use
-  region?: string; // Optional field for future use
+  // Added for setup_tenant_user
+  preferredCountry: string;
+  preferredRegion: string;
+  preferredCity: string;
 }
 
 interface ValidationErrors {
@@ -26,6 +25,10 @@ interface ValidationErrors {
   email?: string;
   password?: string;
   confirmPassword?: string;
+  // Added for setup_tenant_user
+  preferredCountry?: string;
+  preferredRegion?: string;
+  preferredCity?: string;
 }
 
 const Register: React.FC = () => {
@@ -38,7 +41,10 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    termsAccepted: false
+    // Added for setup_tenant_user
+    preferredCountry: 'CA',
+    preferredRegion: '',
+    preferredCity: ''
   });
   
   const [showPassword, setShowPassword] = useState(false);
@@ -47,12 +53,41 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Added for location selection
+  const countries = [
+    { code: 'CA', name: 'Canada' },
+    { code: 'US', name: 'United States' }
+  ];
+
+  const regions = {
+    CA: [
+      { code: 'ON', name: 'Ontario' },
+      { code: 'BC', name: 'British Columbia' },
+      { code: 'AB', name: 'Alberta' },
+      { code: 'QC', name: 'Quebec' }
+    ],
+    US: [
+      { code: 'CA', name: 'California' },
+      { code: 'NY', name: 'New York' },
+      { code: 'TX', name: 'Texas' },
+      { code: 'FL', name: 'Florida' }
+    ]
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
+    
+    // Clear region when country changes
+    if (name === 'preferredCountry') {
+      setFormData(prev => ({
+        ...prev,
+        preferredRegion: ''
+      }));
+    }
     
     // Clear validation error for this field
     if (validationErrors[name as keyof ValidationErrors]) {
@@ -116,13 +151,23 @@ const Register: React.FC = () => {
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
+
+    // Added location validation
+    if (!formData.preferredCountry) {
+      errors.preferredCountry = 'Country is required';
+    }
+    if (!formData.preferredRegion) {
+      errors.preferredRegion = 'Province/State is required';
+    }
+    if (!formData.preferredCity.trim()) {
+      errors.preferredCity = 'City is required';
+    }
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     setError('');
     
     if (!validateForm()) {
@@ -139,9 +184,13 @@ const Register: React.FC = () => {
         confirm_password: formData.confirmPassword,  // ← Backend expects this name
         first_name: formData.firstName,              // ← Backend expects snake_case
         last_name: formData.lastName,                // ← Backend expects snake_case
-        terms_accepted: true,                        // or formData.termsAccepted if you want to use the form value
-        subproject_sid: '',                          // Provide actual value if needed
-        subproject_auth_token: ''                    // Provide actual value if needed
+        // Added for setup_tenant_user
+        preferred_country: formData.preferredCountry,
+        preferred_region: formData.preferredRegion,
+        preferred_city: formData.preferredCity,
+        personal_phone: '', // Provide a value or add a field to the form
+        subproject_sid: '', // Provide a value or add a field to the form
+        subproject_auth_token: '' // Provide a value or add a field to the form
       });
       
       // Registration successful - user will be redirected by the auth context
@@ -187,7 +236,7 @@ const Register: React.FC = () => {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         {/* Name Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -205,7 +254,7 @@ const Register: React.FC = () => {
                 className={`form-input pl-10 ${
                   validationErrors.firstName 
                     ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                    : ''
+                    : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
                 }`}
                 disabled={isSubmitting}
               />
@@ -233,7 +282,7 @@ const Register: React.FC = () => {
                 className={`form-input pl-10 ${
                   validationErrors.lastName 
                     ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                    : ''
+                    : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
                 }`}
                 disabled={isSubmitting}
               />
@@ -263,7 +312,7 @@ const Register: React.FC = () => {
               className={`form-input pl-10 ${
                 validationErrors.username 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                  : ''
+                  : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
               }`}
               disabled={isSubmitting}
             />
@@ -292,7 +341,7 @@ const Register: React.FC = () => {
               className={`form-input pl-10 ${
                 validationErrors.email 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
-                  : ''
+                  : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
               }`}
               disabled={isSubmitting}
             />
@@ -303,6 +352,98 @@ const Register: React.FC = () => {
               {validationErrors.email}
             </p>
           )}
+        </div>
+
+        {/* ADDED: Location Fields for setup_tenant_user */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Country
+            </label>
+            <div className="relative">
+              <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <select
+                name="preferredCountry"
+                value={formData.preferredCountry}
+                onChange={handleInputChange}
+                className={`form-input pl-10 ${
+                  validationErrors.preferredCountry 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
+                }`}
+                disabled={isSubmitting}
+              >
+                {countries.map(country => (
+                  <option key={country.code} value={country.code}>{country.name}</option>
+                ))}
+              </select>
+            </div>
+            {validationErrors.preferredCountry && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {validationErrors.preferredCountry}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {formData.preferredCountry === 'CA' ? 'Province' : 'State'}
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <select
+                name="preferredRegion"
+                value={formData.preferredRegion}
+                onChange={handleInputChange}
+                className={`form-input pl-10 ${
+                  validationErrors.preferredRegion 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
+                }`}
+                disabled={isSubmitting}
+              >
+                <option value="">Select {formData.preferredCountry === 'CA' ? 'Province' : 'State'}</option>
+                {regions[formData.preferredCountry as keyof typeof regions]?.map(region => (
+                  <option key={region.code} value={region.code}>{region.name}</option>
+                ))}
+              </select>
+            </div>
+            {validationErrors.preferredRegion && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {validationErrors.preferredRegion}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              City
+            </label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                name="preferredCity"
+                value={formData.preferredCity}
+                onChange={handleInputChange}
+                placeholder="Toronto"
+                className={`form-input pl-10 ${
+                  validationErrors.preferredCity 
+                    ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                    : 'border-secondary-600 focus:ring-secondary-900 focus:border-secondary-900'
+                }`}
+                disabled={isSubmitting}
+              />
+            </div>
+            {validationErrors.preferredCity && (
+              <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {validationErrors.preferredCity}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Password Field */}
@@ -420,6 +561,7 @@ const Register: React.FC = () => {
         {/* Submit Button */}
         <button
           type="submit"
+          onClick={handleSubmit}
           disabled={isSubmitting}
           className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -435,19 +577,19 @@ const Register: React.FC = () => {
             </>
           )}
         </button>
-      </form>
+      </div>
 
       {/* Terms and Privacy */}
       <div className="mt-6 text-center">
         <p className="text-xs text-slate-600 dark:text-slate-400">
           By creating an account, you agree to our{' '}
-          <Link to="/terms" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <a href="/terms" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
             Terms of Service
-          </Link>{' '}
+          </a>{' '}
           and{' '}
-          <Link to="/privacy" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+          <a href="/privacy" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
             Privacy Policy
-          </Link>
+          </a>
         </p>
       </div>
 
@@ -455,12 +597,9 @@ const Register: React.FC = () => {
       <div className="mt-8 text-center">
         <p className="text-slate-600 dark:text-slate-400">
           Already have an account?{' '}
-          <Link 
-            to="/login" 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors"
-          >
+          <a href="/login" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors">
             Sign in here
-          </Link>
+          </a>
         </p>
       </div>
     </>
