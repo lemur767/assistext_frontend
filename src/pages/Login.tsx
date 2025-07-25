@@ -153,7 +153,7 @@ const Login: React.FC = () => {
     <>
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold text-black dark:text-white mb-2">Welcome Back</h2>
-        <p className="text-primary-300">Sign in to your AssisText account</p>
+        <p className="text-slate-600 dark:text-primar y-300">Sign in to your AssisText account</p>
       </div>
 
       {/* ✅ Global Error Message from useAuth */}
@@ -179,11 +179,11 @@ const Login: React.FC = () => {
         
         {/* Username Field */}
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-grey-700 mb-2">
+          <label htmlFor="username" className="block text-sm font-medium dark:text-white mb-2">
             Username or Email
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-400" />
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-accent-400" />
             <input
               id="username"
               type="text"
@@ -192,7 +192,7 @@ const Login: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter your username or email"
               autoComplete="username"
-              className={`w-full pl-10 pr-4 py-3 border text-secondary-700 rounded-xl bg-gray   dark:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
+              className={`w-full pl-10 pr-4 py-3 border text-accent-900 rounded-xl bg-gray   dark:bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
                 validationErrors.username 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
                   : 'border-gray-300 hover:border-gray-400'
@@ -210,11 +210,11 @@ const Login: React.FC = () => {
 
         {/* Password Field */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-grey-700 mb-2">
+          <label htmlFor="password" className="block text-sm font-medium dark:text-white mb-2">
             Password
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-secondary-700" />
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-accent-400" />
             <input
               id="password"
               type={showPassword ? 'text' : 'password'}
@@ -223,7 +223,7 @@ const Login: React.FC = () => {
               onChange={handleInputChange}
               placeholder="Enter your password"
               autoComplete="current-password"
-              className={`w-full pl-10 pr-12 py-3 border text-secondary-700 rounded-xl bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
+              className={`w-full pl-10 pr-12 py-3 border text-accent-900 rounded-xl bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-accent-500 ${
                 validationErrors.password 
                   ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
                   : 'border-gray-300 hover:border-gray-400'
@@ -274,7 +274,7 @@ const Login: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading} 
-          className={`w-full flex items-center justify-center space-x-2 py-3 px-4 border border-transparent rounded-xl text-white font-medium transition-all duration-200 ${
+          className={`btn btn-secondary w-full flex items-center justify-center space-x-2 py-3 px-4 border border-transparent rounded-xl text-white font-medium transition-all duration-200 ${
             isLoading
               ? 'bg-gray-400 cursor-not-allowed'
               : 'btn btn-secondary hover:bg-transparent hover:border-brand-accent-dark hover:border-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
@@ -298,7 +298,7 @@ const Login: React.FC = () => {
 
       {/* Form Footer */}
       <div className="mt-8 text-center">
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-white">
           Don't have an account?{' '}
           <Link 
             to="/register" 

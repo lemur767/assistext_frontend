@@ -1,39 +1,38 @@
 // src/pages/LandingPage.tsx - Fixed and complete landing page
-import React from 'react';
+import logo from '../assets/logoNoRect.png';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MessageSquare, Shield, Brain, Zap, CheckCircle, Star } from 'lucide-react';
 
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-inherit dark:bg-slate-950">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-grid opacity-20"></div>
-        
-        {/* Gradient Orbs */}
-        <div className="absolute top-40 left-10 w-30 h-30 bg-gradient-to-r from-primary-400 to-accent-900 rounded-full filter mix-blend-multiply blur-xl opacity-80 animate-pulse"></div>
-        <div className="absolute top-20 right-10 w-3  0 h-30 bg-gradient-to-r from-accent-600 to-indigo-400 rounded-full filter mix-blend-multiply blur-xl opacity-80 animate-pulse delay-1000"></div>
-        
-        <div className="relative container bg-[url(/src/assets/Background.png)] bg-size-100% mx-auto px-6 pt-20 pb-32">
+       <div className="relative container bg-slate-950 bg-size-100% mx-auto px-6 pt-20 pb-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="mb-8">
               <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/20">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="w-2 h-2 bg-accent-400 rounded-full animate-pulse"></span>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   🇨🇦 Proudly Canadian • PIPEDA Compliant
                 </span>
               </div>
             </div>
-            
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-              <span className="text-slate-900 dark:text-white">AI-Powered</span>
+            <div className="flex flex-row items-between justify-center mb-8">
+              <div className="items-center justify-center mb-4 p-2">
+                <img src={logo} width={220} height={220} alt="logo"/>
+              </div>
+            <div>
+            <h1 className="font-bold m-8 leading-tight">
+              <span className="text-2xl md:text-5xl text-slate-900 dark:text-white">AI-Powered</span>
               <br />
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                SMS Assistant
+              <span className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-accent-300 to-secondary-900 bg-clip-text text-transparent">
+                Assist Text
               </span>
             </h1>
+            </div>
+            </div>
             
             <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
               Transform your business communications with intelligent SMS automation. 
@@ -43,14 +42,14 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Link 
                 to="/register" 
-                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-2xl"
+                className="group px-8 py-4 bg-gradient-to-r from-secondary-600 to-primary-600 text-white rounded-2xl font-semibold text-lg hover:from-primary-600 hover:to-accent-400 hover:border-2 hover:to-bg-slate-700 transform hover:scale-105 transition-all duration-500 shadow-2xl"
               >
                 Start Free Trial
                 <ArrowRight className="w-5 h-5 ml-2 inline-block group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link 
                 to="/login" 
-                className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg hover:bg-white dark:hover:bg-slate-700 transition-all duration-200 border border-white/20"
+                className="px-8 py-4 bg-white/80 dark:bg-transparent text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg hover:bg-white dark:hover:bg-slate-700 transition-all duration-200 border border-white/20"
               >
                 Sign In
               </Link>
@@ -86,7 +85,7 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto align-middle justify-center">
             {[
               {
                 icon: Brain,
@@ -103,13 +102,13 @@ const LandingPage: React.FC = () => {
               {
                 icon: Zap,
                 title: '24/7 Availability',
-                description: 'Never miss a message again. Instant responses with customizable business hours.',
+                description: 'Never miss a message again. Instant responses with customizable business hours.  Your own canadian phone number provided.',
                 color: 'from-orange-500 to-red-500'
               }
             ].map((feature, index) => (
-              <div key={index} className="group p-8 bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 hover:scale-105 transition-all duration-300">
-                <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-8 h-8 text-white" />
+              <div key={index} className="group p-8 bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border hover:border-white/20 border-3 hover:scale-105 transition-all duration-300">
+                <div className={`w-16 h-16 justify-center align-middle bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <feature.icon className="w-8 h-8 justify-center text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{feature.title}</h3>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{feature.description}</p>
@@ -135,26 +134,26 @@ const LandingPage: React.FC = () => {
             {[
               {
                 name: 'Starter',
-                price: '$29',
+                price: '$19',
                 period: '/month',
                 description: 'Perfect for small businesses',
-                features: ['500 SMS messages', 'Basic AI responses', 'Email support', '1 phone number'],
+                features: ['100 SMS messages', 'Basic AI responses', 'Email support'],
                 highlighted: false
               },
               {
                 name: 'Professional',
-                price: '$49',
+                price: '$34',
                 period: '/month',
                 description: 'Most popular for growing businesses',
-                features: ['2,000 SMS messages', 'Advanced AI training', 'Priority support', '3 phone numbers', 'Analytics dashboard'],
+                features: ['2,000 SMS messages', 'Advanced AI training', 'Priority support', 'Analytics dashboard'],
                 highlighted: true
               },
               {
                 name: 'Enterprise',
-                price: '$99',
+                price: '$79',
                 period: '/month',
                 description: 'For large organizations',
-                features: ['10,000 SMS messages', 'Custom AI training', '24/7 phone support', 'Unlimited numbers', 'Advanced analytics', 'API access'],
+                features: ['10,000 SMS messages', 'Custom AI training', 'Personal Support 24/7', 'Advanced analytics'],
                 highlighted: false
               }
             ].map((plan, index) => (
