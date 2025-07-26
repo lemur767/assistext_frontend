@@ -3,7 +3,8 @@
 import React, { createContext, useReducer, useEffect, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import apiClient from '../services/apiClient';
-import type { User, LoginCredentials, RegisterData } from '../types/auth';
+import type { User, LoginCredentials, RegisterData, SearchNumbersRequest, PurchaseNumberRequest } from '../types/auth';
+
 
 // Define the AuthState type
 export interface AuthState {
@@ -19,6 +20,8 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
+  searchNumbers: (criteria: SearchNumbersRequest) => Promise<any>;
+  purchaseNumber: (request: PurchaseNumberRequest) => Promise<any>;
   logout: () => void;
   clearError: () => void;
   updateUser: (userData: Partial<User>) => void;
@@ -140,6 +143,8 @@ export const AuthContext = createContext<AuthContextType>({
   ...initialState,
   login: async () => {},
   register: async () => {},
+  searchNumbers: async () => { return Promise.resolve(undefined); },
+  purchaseNumber: async () => { return Promise.resolve(undefined); },
   logout: () => {},
   clearError: () => {},
   updateUser: () => {},
@@ -335,6 +340,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }, [state.user]);
 
+   const searchNumbers = useCallback(async (criteria: SearchNumbersRequest) => {
+    try {
+      const response = await apiClient.post('/api/auth/search-numbers', criteria);
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Number search failed';
+      throw new Error(errorMessage);
+    }
+  }, []);
+
+  // Add phone number purchase method
+  const purchaseNumber = useCallback(async (request: PurchaseNumberRequest) => {
+    try {
+      const response = await apiClient.post('/api/auth/purchase-number', request);
+      
+      // Update user data with new phone number
+      if (response.success && response.user) {
+        dispatch({
+          type: 'UPDATE_USER',
+          payload: response.user,
+        });
+      }
+      
+      return response;
+    } catch (err: any) {
+      const errorMessage = err.message || 'Number purchase failed';
+      throw new Error(errorMessage);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -346,6 +381,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         error: state.error,
         login,
         register,
+        searchNumbers,
+        purchaseNumber,
         logout,
         clearError,
         updateUser,
