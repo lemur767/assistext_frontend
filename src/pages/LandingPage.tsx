@@ -6,7 +6,7 @@ import { ArrowRight, MessageSquare, Shield, Brain, Zap, CheckCircle, Star } from
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-inherit dark:bg-slate-950">
+    <div className="min-h-screen bg-inherit dark:bg-slate-900">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
        <div className="relative container bg-slate-950 bg-size-100% mx-auto px-6 pt-20 pb-32">
