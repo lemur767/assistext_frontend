@@ -150,7 +150,13 @@ export default {
         sans: ['Fira', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
-      
+      backgroundSize: {
+        '200%': '200% 100%',
+      },
+      backgroundPosition: {
+        'pos-0': '0% 0%',
+        'pos-100%': '100% 0%',
+      },
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
         'sm': ['0.875rem', { lineHeight: '1.25rem' }],
@@ -456,11 +462,24 @@ export default {
         
         // Dark mode button styles
         '.dark .btn-outline': {
+          padding: '0.75rem 1.5rem',
+          fontSize: '16px',
+          fontWeight: '600',
           color: '#88d5f4',
+          alignItems: 'center',
+          justifyContent: 'center',
+          display: 'inline-flex',
+          textDecoration: 'none',
+          justifyContent: 'center',
+          backgroundColor: 'transparent',
+          border: '1px solid #88d5f4',
           borderColor: '#88d5f4',
           '&:hover:not(:disabled)': {
-            backgroundColor: '#88d5f4',
-            color: '#040d12',
+            backgroundColor: 'var(--color-bg-dark)',
+            color: 'white',
+            transform: 'translateY(-1px)',
+            boxShadow: '0 6px 20px 0 rgba(136, 213, 244, 0.3)',
+
           },
         },
         

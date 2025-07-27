@@ -6,10 +6,20 @@ import { ArrowRight, MessageSquare, Shield, Brain, Zap, CheckCircle, Star } from
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-inherit dark:bg-slate-900">
+    <div className="min-h-screen pt-3 mt-2 bg-slate-50 dark:bg-slate-950 overflow-hidden">
+      {/* Background orbs - heavily blurred for subtle ambient lighting */}
+      <div className="fixed top-20 left-10 w-72 h-72 bg-blue-400/20 dark:bg-blue-500/30 rounded-full blur-3xl animate-pulse pointer-events-none" />
+      <div className="fixed top-40 right-20 w-96 h-96 bg-purple-400/15 dark:bg-purple-500/25 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
+      <div className="fixed bottom-20 left-1/3 w-80 h-80 bg-cyan-400/20 dark:bg-cyan-500/30 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '4s' }} />
+      <div className="fixed bottom-40 right-1/4 w-64 h-64 bg-pink-400/15 dark:bg-pink-500/25 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '6s' }} />
+      
+      {/* Subtle overlay for depth */}
+      <div className="fixed inset-0 bg-white/30 dark:bg-black/20 pointer-events-none" />
+      
+      <div className="relative z-10">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-       <div className="relative container bg-slate-950 bg-size-100% mx-auto px-6 pt-20 pb-32">
+      
           <div className="text-center max-w-4xl mx-auto">
             <div className="mb-8">
               <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/20">
@@ -70,11 +80,11 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
+      <section id="features" className="py-24 backdrop=blur-sm">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
@@ -106,13 +116,17 @@ const LandingPage: React.FC = () => {
                 color: 'from-orange-500 to-red-500'
               }
             ].map((feature, index) => (
-              <div key={index} className="group p-8 bg-transparent backdrop-blur-sm rounded-3xl shadow-xl border hover:border-white/20 border-3 hover:scale-105 transition-all duration-300">
+              <div key={index} className={`grid-rows-1 inset-0 ${feature.color} blur-xl rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+                <div className="flex bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/30 dark:border-slate-700/50 hover:border-white/50 dark:hover:border-slate-600/50 transition-all duration-300 hover:-translate-y-1" >
                 <div className={`w-16 h-16 justify-center align-middle bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                   <feature.icon className="w-8 h-8 justify-center text-white" />
                 </div>
                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{feature.title}</h3>
                 <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{feature.description}</p>
               </div>
+            
+          </div>
+          
             ))}
           </div>
         </div>
@@ -161,7 +175,7 @@ const LandingPage: React.FC = () => {
                 key={index} 
                 className={`relative p-8 rounded-3xl shadow-xl border transition-all duration-300 hover:scale-105 ${
                   plan.highlighted 
-                    ? 'bg-gradient-to-b from-blue-600 to-indigo-600 text-white border-blue-500 scale-105' 
+                    ? 'bg-gradient-to-b hover:backdrop-blue-md hover:bg-accent-400/25 from-blue-600 to-indigo-600 text-white border-blue-500 scale-105' 
                     : 'bg-white/80 dark:bg-slate-700/80 backdrop-blur-sm border-white/20 text-slate-900 dark:text-white'
                 }`}
               >
@@ -212,8 +226,9 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6">
+      <section className="py-24 bg-white/50 dark:bg-slate-800/25 backdrop-blur-sm">
+      
+        <div className="container backdrop-blue-lg mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
               Trusted by Canadian Businesses
@@ -272,17 +287,17 @@ const LandingPage: React.FC = () => {
               Join thousands of Canadian businesses using AI to respond faster, smarter, and more efficiently.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
+            <div className= "flex flex-col-2 gap-6 justify-center mb-8">
               <Link 
                 to="/register" 
-                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 shadow-2xl"
-              >
+                className="m-2 text-white rounded-xl transition-all duration-500 bg-gradient-to-t to-white via-black from-red-500 bg-size-200 bg-pos-0 hover:bg-pos-100">
                 Start Your Free Trial
                 <ArrowRight className="w-5 h-5 ml-2 inline-block group-hover:translate-x-1 transition-transform" />
+                          
               </Link>
               <Link 
                 to="/login" 
-                className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg hover:bg-white dark:hover:bg-slate-700 transition-all duration-200 border border-white/20"
+                className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg dark:hover:bg-transparent dark:hover:border-white/90 dark:hover:bg-slate-700 transition-all duration-200 border border-white/40"
               >
                 Sign In
               </Link>
@@ -362,6 +377,7 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+    </div>
     </div>
   );
 };
