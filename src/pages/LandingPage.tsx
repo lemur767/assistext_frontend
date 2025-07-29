@@ -2,11 +2,47 @@
 import logo from '../assets/logoNoRect.png';
 import { Link } from 'react-router-dom';
 import { ArrowRight, MessageSquare, Shield, Brain, Zap, CheckCircle, Star } from 'lucide-react';
+import { GlassGradCard } from '../components/UI/GlassGradientCard';
 
+const data = [
+            {
+                
+                icon: <Brain className="w-8 h-8 text-accent-400" />,
+                title: 'AI-Powered Intelligence',
+                glow: 'accent' as const,
+                blur: 'light' as const,
+                size: 'sm' as const,
+                animation:'glow' as const,
+                description: 'Advanced AI learns your communication style and responds naturally to customers.',
+                
+              },
+              {
+                
+                icon: <Shield className="w-8 h-8 text-secondary-400" />,
+                title: 'Privacy & Security',
+                description: 'Canadian-hosted with enterprise-grade encryption. PIPEDA compliant by design.',
+                blur:'light' as const,
+                size:'sm' as const,
+                animation:'glow' as const,
+                glow:'brand' as const
+
+
+              },
+              {
+                icon: <Zap className="w-8 h-8 text-primary-400" />,
+                title: '24/7 Availability',
+                description: 'Never miss a message again. Instant responses with customizable business hours.',
+                glow: 'secondary' as const,
+                blur: 'light' as const,
+                size: 'sm' as const,
+                animation: 'glow' as const
+
+              }
+         ]
 
 const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen pt-3 mt-2 bg-slate-50 dark:bg-slate-950 overflow-hidden">
+    <div className="min-h-screen pt-3 mt-2 dark:bg-slate-950 overflow-hidden">
       {/* Background orbs - heavily blurred for subtle ambient lighting */}
       <div className="fixed top-20 left-10 w-72 h-72 bg-blue-400/20 dark:bg-blue-500/30 rounded-full blur-3xl animate-pulse pointer-events-none" />
       <div className="fixed top-40 right-20 w-96 h-96 bg-purple-400/15 dark:bg-purple-500/25 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '2s' }} />
@@ -21,7 +57,7 @@ const LandingPage: React.FC = () => {
       <section className="relative overflow-hidden">
       
           <div className="text-center max-w-4xl mx-auto">
-            <div className="mb-8">
+            
               <div className="inline-flex items-center space-x-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-white/20">
                 <span className="w-2 h-2 bg-accent-400 rounded-full animate-pulse"></span>
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -44,10 +80,10 @@ const LandingPage: React.FC = () => {
             </div>
             </div>
             
-            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Transform your business communications with intelligent SMS automation. 
-              Never miss a message, always respond professionally, available 24/7.
-            </p>
+            <p className="text-xl text-center items-center justify-center md:text-2xl text-slate-600 dark:text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              Transform your business communications with intelligent SMS automation.
+              Never miss a message, always respond professionally, available 24/7.</p>
+           
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Link 
@@ -79,14 +115,15 @@ const LandingPage: React.FC = () => {
                 <span>Cancel anytime</span>
               </div>
             </div>
-          </div>
+       </section>
+         
         
-      </section>
-
+                      
       {/* Features Section */}
-      <section id="features" className="py-24 backdrop=blur-sm">
-        <div className="container mx-auto px-6">
+      <section id="features" className="py-24 backdrop-blur-sm">
+        <div className="absolute z-12 flex flex-row gap-8 align-center justifty-center p-4"></div>
           <div className="text-center mb-16">
+                
             <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-6">
               Why Choose AssisText?
             </h2>
@@ -94,43 +131,32 @@ const LandingPage: React.FC = () => {
               Built specifically for Canadian businesses who value privacy, security, and intelligent automation.
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto align-middle justify-center">
-            {[
-              {
-                icon: Brain,
-                title: 'AI-Powered Intelligence',
-                description: 'Advanced AI learns your communication style and responds naturally to customers.',
-                color: 'from-blue-500 to-indigo-500'
-              },
-              {
-                icon: Shield,
-                title: 'Privacy & Security',
-                description: 'Canadian-hosted with enterprise-grade encryption. PIPEDA compliant by design.',
-                color: 'from-green-500 to-emerald-500'
-              },
-              {
-                icon: Zap,
-                title: '24/7 Availability',
-                description: 'Never miss a message again. Instant responses with customizable business hours.  Your own canadian phone number provided.',
-                color: 'from-orange-500 to-red-500'
-              }
-            ].map((feature, index) => (
-              <div key={index} className={`grid-rows-1 inset-0 ${feature.color} blur-xl rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
-                <div className="flex bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-white/30 dark:border-slate-700/50 hover:border-white/50 dark:hover:border-slate-600/50 transition-all duration-300 hover:-translate-y-1" >
-                <div className={`w-16 h-16 justify-center align-middle bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-8 h-8 justify-center text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">{feature.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{feature.description}</p>
+      <div className="grid md:grid-cols-3 mx-8 max-w-6xl justify-between gap-8 ">
+         {data.map((data, index) =>  {
+          return (
+            <GlassGradCard className="hover:scale-105 transition-transform duration-300"
+              key={index}
+              glow={data.glow}
+              blur={data.blur}
+              size={data.size}
+              animation={data.animation}>
+                
+              <div className="text-center flex flex-col items-center m-2 p-2">
+                <div className="w-10 h-10 text-accent-400 justify-center items-center mb-4">{data.icon}</div> 
+                <h3 className="text-2xl font-semibold text-slate-900 dark:text-white mb-2">{data.title}</h3>
+                <p className="text-slate-600 dark:text-slate-300">{data.description}</p>
               </div>
-            
-          </div>
-          
-            ))}
-          </div>
-        </div>
-      </section>
+              
+            </GlassGradCard>
+          )
+         }
+        )}
+      </div>
+                      
+       
+       
+      
+    </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-24">
@@ -287,19 +313,18 @@ const LandingPage: React.FC = () => {
               Join thousands of Canadian businesses using AI to respond faster, smarter, and more efficiently.
             </p>
             
-            <div className= "flex flex-col-2 gap-6 justify-center mb-8">
+            <div className= "flex flex-col-2 gap-6 justify-center mb-12">
               <Link 
                 to="/register" 
-                className="m-2 text-white rounded-xl transition-all duration-500 bg-gradient-to-t to-white via-black from-red-500 bg-size-200 bg-pos-0 hover:bg-pos-100">
+                className="dark:text-slate-300 mb-12 px-8 py-5 bg-gradient-to-r from-secondary-600 to-primary-600 text-white rounded-2xl font-semibold hover:from-primary-600 hover:to-accent-400 hover:border-2 hover:to-bg-slate-700 transform hover:scale-105 transition-all duration-500 shadow-2xl flex items-center justify-center">
                 Start Your Free Trial
                 <ArrowRight className="w-5 h-5 ml-2 inline-block group-hover:translate-x-1 transition-transform" />
                           
               </Link>
               <Link 
                 to="/login" 
-                className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg dark:hover:bg-transparent dark:hover:border-white/90 dark:hover:bg-slate-700 transition-all duration-200 border border-white/40"
-              >
-                Sign In
+                className="px-8 py-4 h-fit bg-white/80 dark:bg-transparent text-slate-900 dark:text-white backdrop-blur-sm rounded-2xl font-semibold text-lg dark:hover:bg-slate-800/80 dark:hover:border-white/90 dark:hover:bg-slate-700 transition-all duration-200 border border-white/40"
+              >Sign In
               </Link>
             </div>
             
