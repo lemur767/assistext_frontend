@@ -75,6 +75,8 @@ export const API_ENDPOINTS = {
     dashboard: '/api/analytics/dashboard',
     messages: '/api/analytics/messages',
     clients: '/api/analytics/clients',
+    export: '/api/analytics/export',
+    performance: '/api/analytics/performance'
   },
 } as const;
 

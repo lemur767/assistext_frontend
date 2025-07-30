@@ -473,9 +473,7 @@ export const Card: React.FC<CardProps> = ({
 };
 
 // Export all components
-export {
-  DarkModeToggle,
-} from './DarkModeToggle';
+
 
 export default {
   Notification,
@@ -486,4 +484,10 @@ export default {
   LoadingOverlay,
   Skeleton,
   Card,
-};
+}
+export { Button } from './Button';
+export { Select } from './Select';
+export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
+export { Badge } from './Badge';
+export { Tooltip } from './Tooltip';
+export { CardHeader, CardTitle, CardContent } from './Card';;
